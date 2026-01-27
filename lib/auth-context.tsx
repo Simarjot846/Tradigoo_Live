@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 5000); // 5 seconds max wait
 
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (session?.user) {
         fetchUserProfile(session.user).then(profile => {
           setUser(profile);
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         clearTimeout(timer);
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       // Ignore AbortErrors (common during reloads/redirects)
       if (err.name === 'AbortError' || err.message?.includes('aborted')) {
         setLoading(false);
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => {
         if (session?.user) {
           const profile = await fetchUserProfile(session.user);
           setUser(profile);

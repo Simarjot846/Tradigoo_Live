@@ -1,9 +1,9 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { SupabaseClient } from '@supabase/supabase-js';
 
+let browserClient: SupabaseClient | undefined;
 
-let browserClient: ReturnType<typeof createBrowserClient> | undefined;
-
-export function createClient() {
+export function createClient(): SupabaseClient {
   if (typeof window === 'undefined') {
     return createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +18,6 @@ export function createClient() {
     );
   }
 
-  return browserClient;
+  return browserClient!;
 }
 

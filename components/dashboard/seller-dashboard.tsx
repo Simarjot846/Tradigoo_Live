@@ -90,7 +90,7 @@ export function SellerDashboard() {
                     table: 'orders',
                     filter: `seller_id=eq.${user.id}`
                 },
-                (payload) => {
+                (payload: any) => {
                     const newOrder = payload.new as any;
                     // Check if status changed to 'payment_in_escrow'
                     if (newOrder.status === 'payment_in_escrow') {
@@ -116,7 +116,7 @@ export function SellerDashboard() {
     const handleProductAdded = () => {
         const supabase = createClient();
         supabase.from('products').select('*').order('created_at', { ascending: false })
-            .then(({ data }) => { if (data) setInventory(data); });
+            .then(({ data }: any) => { if (data) setInventory(data); });
     };
 
     const handleOrderAction = async (orderId: string, action: 'accept' | 'reject') => {

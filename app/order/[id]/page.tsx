@@ -77,7 +77,7 @@ export default function OrderTrackingPage() {
         schema: 'public',
         table: 'orders',
         filter: `id=eq.${params.id}`
-      }, (payload) => {
+      }, (payload: any) => {
         console.log("Real-time update:", payload);
         fetchOrder(); // simple re-fetch on change
       })
