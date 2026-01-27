@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, X, Send, Bot, User, Loader2, Minimize2, Mic } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Loader2, Minimize2, Mic, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Message = {
@@ -105,13 +105,29 @@ export function Chatbot() {
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
-                        className="fixed bottom-6 right-6 z-50"
+                        className="fixed bottom-6 right-6 z-50 flex items-center gap-4"
                     >
+                        {/* Text Bubble */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1 }}
+                            className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white px-4 py-2 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 text-sm font-semibold hidden md:block"
+                        >
+                            Need help? 🤖
+                        </motion.div>
+
                         <Button
                             onClick={() => setIsOpen(true)}
-                            className="h-14 w-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
+                            className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-[length:200%_auto] animate-gradient shadow-xl hover:shadow-2xl hover:scale-110 transition-all relative overflow-visible group"
                         >
-                            <MessageCircle className="h-8 w-8 text-white" />
+                            {/* Ping Animation */}
+                            <span className="absolute -inset-1 rounded-full bg-blue-500 opacity-75 animate-ping group-hover:opacity-40" />
+
+                            {/* Icon */}
+                            <div className="relative flex items-center justify-center">
+                                <Sparkles className="h-8 w-8 text-white animate-pulse" />
+                            </div>
                         </Button>
                     </motion.div>
                 )}
