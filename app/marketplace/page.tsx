@@ -124,9 +124,7 @@ function MarketplaceContent() {
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
 
   if (loading || loadingProducts) {
-    return (
-      <MarketplaceSkeleton />
-    );
+    return null; // MarketplaceLoading will show
   }
 
 
