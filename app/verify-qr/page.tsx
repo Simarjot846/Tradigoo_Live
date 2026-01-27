@@ -68,8 +68,11 @@ function VerifyContent() {
     if (status === 'loading') {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-white">
-                <Loader2 className="w-10 h-10 animate-spin mb-4 text-blue-500" />
-                <p>Verifying Secure Token...</p>
+                <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 animate-pulse rounded-full" />
+                    <ShieldCheck className="w-16 h-16 text-blue-500 animate-pulse relative z-10" />
+                </div>
+                <p className="text-zinc-400 font-medium tracking-wide animate-pulse">Authenticating Secure Token...</p>
             </div>
         );
     }

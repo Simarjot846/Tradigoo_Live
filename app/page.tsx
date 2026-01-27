@@ -172,12 +172,16 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6"
             >
-              <Button size="lg" className="h-16 px-10 rounded-full text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/40 w-full sm:w-auto group transition-all hover:scale-105">
-                Start Sourcing
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <Button asChild size="lg" className="h-16 px-10 rounded-full text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/40 w-full sm:w-auto group transition-all hover:scale-105">
+                <Link href="/auth/signup">
+                  Start Sourcing
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white backdrop-blur-sm w-full sm:w-auto transition-all hover:scale-105">
-                Watch Demo
+              <Button asChild size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white backdrop-blur-sm w-full sm:w-auto transition-all hover:scale-105">
+                <Link href="#features">
+                  Watch Demo
+                </Link>
               </Button>
             </motion.div>
 
@@ -430,11 +434,15 @@ export default function LandingPage() {
                 Join thousands of businesses using Tradigoo to source faster, safer, and smarter.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Button size="lg" className="h-16 px-12 rounded-full text-lg font-bold bg-white text-black hover:bg-blue-50 w-full sm:w-auto shadow-[0_0_40px_-5px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.6)] transition-all hover:scale-105 border-0">
-                  Get Started Free
+                <Button asChild size="lg" className="h-16 px-12 rounded-full text-lg font-bold bg-white text-black hover:bg-blue-50 w-full sm:w-auto shadow-[0_0_40px_-5px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.6)] transition-all hover:scale-105 border-0">
+                  <Link href="/auth/signup">
+                    Get Started Free
+                  </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-16 px-12 rounded-full text-lg border-white/20 bg-white/5 hover:bg-white/10 text-white w-full sm:w-auto transition-all hover:scale-105 hover:border-white/40 shadow-lg">
-                  Talk to Sales
+                <Button asChild size="lg" variant="outline" className="h-16 px-12 rounded-full text-lg border-white/20 bg-white/5 hover:bg-white/10 text-white w-full sm:w-auto transition-all hover:scale-105 hover:border-white/40 shadow-lg">
+                  <Link href="mailto:contact@tradigoo.com">
+                    Talk to Sales
+                  </Link>
                 </Button>
               </div>
             </div>
