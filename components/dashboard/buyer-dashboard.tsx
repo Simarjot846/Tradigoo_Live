@@ -185,7 +185,7 @@ export function BuyerDashboard() {
     );
 }
 
-function ProductGridItem({ product, index }: { product: any, index: number }) {
+const ProductGridItem = memo(function ProductGridItem({ product, index }: { product: any, index: number }) {
     const router = useRouter();
     return (
         <motion.div
@@ -223,30 +223,30 @@ function ProductGridItem({ product, index }: { product: any, index: number }) {
             </div>
         </motion.div>
     )
-}
+});
 
 
-function ProductCard({ product, index }: { product: any, index: number }) {
+const ProductCard = memo(function ProductCard({ product, index }: { product: any, index: number }) {
     const router = useRouter();
     const { addToCart } = useCart();
     return (
         <motion.div
             className="inline-block w-[320px]"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.05 }}
             onClick={() => router.push(`/product/${product.id}`)}
         >
-            <div className="group h-full flex flex-col rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 overflow-hidden hover:border-blue-500/30 hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all cursor-pointer relative shadow-sm dark:shadow-none">
+            <div className="group h-full flex flex-col rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 overflow-hidden hover:border-blue-500/30 hover:shadow-lg transition-all cursor-pointer relative shadow-sm dark:shadow-none">
 
                 <div className="absolute top-4 left-4 z-10">
-                    <Badge className="bg-emerald-500/90 backdrop-blur-md text-white border-0 shadow-lg font-medium px-3">
+                    <Badge className="bg-emerald-500 text-white border-0 shadow-lg font-medium px-3">
                         <TrendingUp className="w-3 h-3 mr-1" /> {product.demand_level} Demand
                     </Badge>
                 </div>
 
                 <div className="h-48 relative overflow-hidden bg-zinc-100 dark:bg-zinc-950">
-                    <div className="absolute inset-0 flex items-center justify-center text-zinc-400 dark:text-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 group-hover:scale-105 transition-transform duration-500">
+                    <div className="absolute inset-0 flex items-center justify-center text-zinc-400 dark:text-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
                         {product.image_url ? (
                             <Image src={product.image_url} alt={product.name} fill className="object-contain" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                         ) : (
@@ -288,66 +288,9 @@ function ProductCard({ product, index }: { product: any, index: number }) {
             </div>
         </motion.div>
     )
-}
+});
 
-function RecommendationCard({ product, delay }: { product: any, delay: number }) {
-    const router = useRouter();
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay }}
-            onClick={() => router.push(`/product/${product.id}`)}
-        >
-            <Card className="bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-white/10 hover:border-blue-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/80 transition-all cursor-pointer group h-full relative overflow-hidden shadow-lg dark:shadow-none">
-                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Sparkles className="w-24 h-24 text-blue-500" />
-                </div>
 
-                <CardContent className="p-6 relative z-10">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-4xl shadow-inner overflow-hidden relative">
-                            {product.image_url ? (
-                                <Image src={product.image_url} alt={product.name} fill className="object-contain" sizes="64px" />
-                            ) : (
-                                <span>{getCategoryEmoji(product.category)}</span>
-                            )}
-                        </div>
-                        <Badge className={`${product.demand_level === 'High' ? 'bg-emerald-500' : 'bg-blue-500'} text-white border-0 shadow-lg`}>
-                            {product.demand_level} Demand
-                        </Badge>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">{product.name}</h3>
-                    <p className="text-xs text-zinc-500 delay-0 mb-6 flex items-center gap-1.5 bg-zinc-100 dark:bg-white/5 p-2 rounded-lg border border-zinc-200 dark:border-white/5 line-clamp-1">
-                        <Sparkles className="w-3 h-3 text-yellow-500 dark:text-yellow-400" />
-                        Reason: {product.recommendation_reason || 'High sales volume'}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                        <div className="p-3 rounded-xl bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/5">
-                            <div className="text-xs text-zinc-500 uppercase font-bold mb-1">Exp. Margin</div>
-                            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">+{product.expected_margin}%</div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/5">
-                            <div className="text-xs text-zinc-500 uppercase font-bold mb-1">Buy Price</div>
-                            <div className="text-xl font-bold text-zinc-900 dark:text-white">₹{product.base_price}<span className="text-sm font-normal text-zinc-500 dark:text-zinc-600">/{product.unit}</span></div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-                            <span>{product.supplier_count || 1} Suppliers</span>
-                        </div>
-                        <Button size="icon" className="rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white transition-colors">
-                            <ArrowRight className="w-5 h-5" />
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        </motion.div>
-    );
-}
 
 function DashboardSkeleton() {
     return (
