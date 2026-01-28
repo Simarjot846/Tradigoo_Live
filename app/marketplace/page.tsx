@@ -138,8 +138,8 @@ function MarketplaceContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans relative selection:bg-blue-500/30">
-      {/* Global Grain Effect (Dark Mode Only) */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnPjxmaWx0ZXIgaWQ9J24nPjxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjUnIHN0aXRjaFRpbGVzPSdzdGl0Y2gnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBmaWx0ZXI9J3VybCgjbiknIG9wYWNpdHk9JzAuNCcvPjwvc3ZnPg==')] mix-blend-overlay" />
+      {/* Global Grain Effect (Dark Mode Only) - Removed for Performance */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-20 bg-gradient-to-br from-zinc-900 to-black mix-blend-overlay" />
 
       {/* 1. Header / Top Filter Bar (Sticky) */}
       <div className="sticky top-[72px] z-30 bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md border-b border-zinc-200 dark:border-white/5 shadow-sm">

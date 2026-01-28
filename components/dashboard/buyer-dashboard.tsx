@@ -90,10 +90,9 @@ export function BuyerDashboard() {
     return (
         <div className="min-h-screen pb-20 dark:bg-zinc-950 bg-background relative selection:bg-blue-500/30 transition-colors duration-300">
             {/* Design System: Grainy Background Effects */}
+            {/* Design System: Simple Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-zinc-950 to-zinc-950 hidden dark:block" />
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnPjxmaWx0ZXIgaWQ9J24nPjxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjUnIHN0aXRjaFRpbGVzPSdzdGl0Y2gnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBmaWx0ZXI9J3VybCgjbiknIG9wYWNpdHk9JzAuNCcvPjwvc3ZnPg==')] opacity-0 dark:opacity-20 bg-repeat mix-blend-overlay" />
-                <div className="absolute top-[10%] right-[10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] mix-blend-screen hidden dark:block" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/5 via-zinc-50 to-zinc-100 dark:from-blue-900/20 dark:via-zinc-950 dark:to-zinc-900" />
             </div>
 
             <div className="container mx-auto px-6 py-10 relative z-10">

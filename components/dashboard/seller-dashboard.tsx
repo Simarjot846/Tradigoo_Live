@@ -146,7 +146,6 @@ export function SellerDashboard() {
             {/* Animated Background */}
             <div className="fixed inset-0 z-0 text-left">
                 <div className="absolute inset-0 z-0 hidden dark:block bg-gradient-to-br from-purple-900/20 via-zinc-950 to-blue-900/20" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-0 dark:opacity-20 bg-repeat mix-blend-overlay" />
             </div>
 
             <div className="container mx-auto px-6 py-8 relative z-10">
