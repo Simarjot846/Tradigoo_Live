@@ -2,8 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  poweredByHeader: false,
+  compress: true,
   reactStrictMode: true,
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,6 +28,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     // reactCompiler: true, // Not yet available in this version's types
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 };
 
