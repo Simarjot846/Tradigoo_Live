@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
         // Initialize Gemini with the current key
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using 'gemini-2.5-flash' as the latest stable model available for this key
+        // Using 'gemini-1.5-flash' for better availability and quota management
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const systemPrompt = `

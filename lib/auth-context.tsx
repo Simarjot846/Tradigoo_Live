@@ -86,17 +86,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => {
       setLoading((currentLoading) => {
         if (currentLoading) {
-          console.warn("Auth check timed out, forcing loading to false");
+          console.warn("Auth check timed out (8s), forcing loading to false. This may be due to slow network or database wake-up.");
           return false;
         }
         return currentLoading;
       });
-    }, 5000); // 5 seconds max wait
+    }, 8000); // Increased to 8 seconds
 
     // Check active session
+    const start = performance.now();
     supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (session?.user) {
+        console.log("Session found, fetching profile...");
         fetchUserProfile(session.user).then(profile => {
+          console.log(`Profile fetched in ${(performance.now() - start).toFixed(2)}ms`);
           setUser(profile);
           setLoading(false);
           clearTimeout(timer);
@@ -134,12 +137,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           // Optimization: Only fetch profile if we don't have one or if it's a critical event
           // checking event types can help, but safest is to fetch and compare.
-          const profile = await fetchUserProfile(session.user);
-
-          setUser(prev => {
-            if (JSON.stringify(prev) === JSON.stringify(profile)) return prev;
-            return profile;
-          });
+          try {
+            const profile = await fetchUserProfile(session.user);
+            setUser(prev => {
+              if (JSON.stringify(prev) === JSON.stringify(profile)) return prev;
+              return profile;
+            });
+          } catch (error) {
+            console.error("Error updating profile on auth change:", error);
+          }
         } else {
           setUser(null);
         }

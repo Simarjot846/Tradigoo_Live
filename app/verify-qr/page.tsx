@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import CryptoJS from "crypto-js";
+// import CryptoJS from "crypto-js"; // Dynamically imported
 import { Card } from "@/components/ui/card";
 import { CheckCircle, XCircle, ShieldCheck, Box, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -15,54 +15,75 @@ function VerifyContent() {
     const [debugError, setDebugError] = useState<string>('');
 
     useEffect(() => {
-        if (!dataParam) {
-            setStatus('invalid');
-            setDebugError("Missing 'data' parameter in URL");
-            return;
+        let isMounted = true;
+
+        async function verify() {
+            if (!dataParam) {
+                setStatus('invalid');
+                setDebugError("Missing 'data' parameter in URL");
+                return;
+            }
+
+            try {
+                // Dynamic import to reduce initial bundle size
+                // and ensure UI renders loading state before heavy work starts
+                const CryptoJS = (await import("crypto-js")).default;
+
+                // Slight delay to allow UI to paint
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                if (!isMounted) return;
+
+                // 1. Sanitize Input: Replace spaces with '+' (common URL encoding glitch)
+                const cleanCipher = dataParam.replace(/ /g, '+');
+
+                // 2. Decrypt
+                const secretKey = "TRADIGOO_SECRET_KEY_PROD";
+                // Check for potential encoding issues
+                if (!cleanCipher) throw new Error("Empty data parameter");
+
+                const bytes = CryptoJS.AES.decrypt(cleanCipher, secretKey);
+
+                // 3. Convert to String
+                let decryptedString = '';
+                try {
+                    decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+                } catch (utfErr) {
+                    // If AES decrypt fails it often returns empty string, but sometimes throws
+                    throw new Error("Decryption Failed: Malformed data or wrong key");
+                }
+
+                if (!decryptedString) {
+                    // Determine if it was a wrong key or just emptiness
+                    // Usually an empty string here means the key didn't work for this cipher
+                    throw new Error("Decryption Result Empty. Please check if the QR was generated with the same Secret Key.");
+                }
+
+                // 4. Parse JSON
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(decryptedString);
+                } catch (jsonErr) {
+                    throw new Error("Invalid JSON structure in decrypted data");
+                }
+
+                if (isMounted) {
+                    setData(parsedData);
+                    setStatus('valid');
+                }
+
+            } catch (e: any) {
+                console.error("Verification Critical Failure:", e);
+                if (isMounted) {
+                    setDebugError(e.message || "Unknown error during verification.");
+                    setStatus('invalid');
+                }
+            }
         }
 
-        try {
-            // 1. Sanitize Input: Replace spaces with '+' (common URL encoding glitch)
-            const cleanCipher = dataParam.replace(/ /g, '+');
+        verify();
 
-            // 2. Decrypt
-            const secretKey = "TRADIGOO_SECRET_KEY_PROD";
-            // Check for potential encoding issues
-            if (!cleanCipher) throw new Error("Empty data parameter");
-
-            const bytes = CryptoJS.AES.decrypt(cleanCipher, secretKey);
-
-            // 3. Convert to String
-            let decryptedString = '';
-            try {
-                decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-            } catch (utfErr) {
-                // If AES decrypt fails it often returns empty string, but sometimes throws
-                throw new Error("Decryption Failed: Malformed data or wrong key");
-            }
-
-            if (!decryptedString) {
-                // Determine if it was a wrong key or just emptiness
-                // Usually an empty string here means the key didn't work for this cipher
-                throw new Error("Decryption Result Empty. Please check if the QR was generated with the same Secret Key.");
-            }
-
-            // 4. Parse JSON
-            let parsedData;
-            try {
-                parsedData = JSON.parse(decryptedString);
-            } catch (jsonErr) {
-                throw new Error("Invalid JSON structure in decrypted data");
-            }
-
-            setData(parsedData);
-            setStatus('valid');
-
-        } catch (e: any) {
-            console.error("Verification Critical Failure:", e);
-            setDebugError(e.message || "Unknown error during verification.");
-            setStatus('invalid');
-        }
+        return () => { isMounted = false; };
     }, [dataParam]);
 
     if (status === 'loading') {

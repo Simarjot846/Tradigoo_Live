@@ -79,12 +79,12 @@ export default function DisputeResolutionPage() {
         });
     };
 
-    if (loading || analyzing || !orderData) {
+    if (loading || !orderData) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-zinc-950">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 border-4 border-zinc-800 border-t-red-500 rounded-full animate-spin" />
-                    <p className="text-zinc-500 animate-pulse">Running AI Fraud Detection...</p>
+                    <p className="text-zinc-500 animate-pulse">Loading Dispute Details...</p>
                 </div>
             </div>
         );
@@ -131,37 +131,44 @@ export default function DisputeResolutionPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <div className="grid md:grid-cols-4 gap-6">
-                            <div className="space-y-1">
-                                <div className="text-sm text-zinc-500 uppercase font-bold">Risk Score</div>
-                                <div className={`text-3xl font-bold ${fraudAnalysis?.riskLevel === 'HIGH' ? 'text-red-500' : 'text-emerald-500'}`}>
-                                    {(fraudAnalysis?.riskScore || 0) * 100}%
-                                </div>
-                                <Badge variant="outline" className={fraudAnalysis?.riskLevel === 'HIGH' ? 'border-red-500 text-red-400' : 'border-emerald-500 text-emerald-400'}>
-                                    {fraudAnalysis?.riskLevel} Risk
-                                </Badge>
+                        {analyzing ? (
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                <p className="text-zinc-500 text-sm animate-pulse">Analyzing Case Details...</p>
                             </div>
-                            <div className="md:col-span-2 space-y-2">
-                                <div className="text-sm text-zinc-500 uppercase font-bold">Analysis Flags</div>
-                                <div className="flex flex-wrap gap-2">
-                                    {fraudAnalysis?.flags.length === 0 ? (
-                                        <span className="text-zinc-500 italic">No verification issues found.</span>
-                                    ) : (
-                                        fraudAnalysis?.flags.map((flag, i) => (
-                                            <Badge key={i} variant="secondary" className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-300">
-                                                {flag}
-                                            </Badge>
-                                        ))
-                                    )}
+                        ) : (
+                            <div className="grid md:grid-cols-4 gap-6">
+                                <div className="space-y-1">
+                                    <div className="text-sm text-zinc-500 uppercase font-bold">Risk Score</div>
+                                    <div className={`text-3xl font-bold ${fraudAnalysis?.riskLevel === 'HIGH' ? 'text-red-500' : 'text-emerald-500'}`}>
+                                        {(fraudAnalysis?.riskScore || 0) * 100}%
+                                    </div>
+                                    <Badge variant="outline" className={fraudAnalysis?.riskLevel === 'HIGH' ? 'border-red-500 text-red-400' : 'border-emerald-500 text-emerald-400'}>
+                                        {fraudAnalysis?.riskLevel} Risk
+                                    </Badge>
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <div className="text-sm text-zinc-500 uppercase font-bold">Analysis Flags</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {fraudAnalysis?.flags.length === 0 ? (
+                                            <span className="text-zinc-500 italic">No verification issues found.</span>
+                                        ) : (
+                                            fraudAnalysis?.flags.map((flag, i) => (
+                                                <Badge key={i} variant="secondary" className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-300">
+                                                    {flag}
+                                                </Badge>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="text-sm text-zinc-500 uppercase font-bold">Recommendation</div>
+                                    <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                                        {fraudAnalysis?.recommendation}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <div className="text-sm text-zinc-500 uppercase font-bold">Recommendation</div>
-                                <div className="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {fraudAnalysis?.recommendation}
-                                </div>
-                            </div>
-                        </div>
+                        )}
 
                         <Separator className="my-6 bg-zinc-100 dark:bg-white/5" />
 

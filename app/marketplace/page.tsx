@@ -62,28 +62,45 @@ function MarketplaceContent() {
   }, [searchParams, initialCategory]);
 
   // Load products from Supabase
+  const [page, setPage] = useState(0);
+  const ITEMS_PER_PAGE = 24;
+  const [hasMore, setHasMore] = useState(true);
+
   useEffect(() => {
     let isMounted = true;
     const timer = setTimeout(() => {
-      if (isMounted) {
+      if (isMounted && loadingProducts) {
         console.warn("Marketplace load timed out");
         setLoadingProducts(false);
       }
-    }, 5000);
+    }, 8000);
 
-    async function loadProducts() {
+    async function loadProducts(isLoadMore = false) {
+      if (!isLoadMore) setLoadingProducts(true);
+
       try {
         const supabase = createClient();
+        const start = page * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE - 1;
+
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('id, name, category, base_price, unit, min_order_quantity, image_url, description, demand_level')
           .eq('is_active', true)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .range(start, end);
 
         if (error) throw error;
 
         if (isMounted) {
-          setProducts(data || []);
+          if (data && data.length < ITEMS_PER_PAGE) {
+            setHasMore(false);
+          }
+          if (isLoadMore) {
+            setProducts(prev => [...prev, ...(data || [])]);
+          } else {
+            setProducts(data || []);
+          }
         }
       } catch (error) {
         console.error("Marketplace load error:", error);
@@ -94,13 +111,15 @@ function MarketplaceContent() {
         }
       }
     }
-    loadProducts();
+    loadProducts(page > 0);
 
     return () => {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, []);
+  }, [page]); // Re-run when page changes
+
+  const loadMore = () => setPage(p => p + 1);
 
   // Use client-side filtering for simplicity given the mock/small dataset
   const filteredProducts = products.filter(p => {
@@ -330,6 +349,25 @@ function MarketplaceContent() {
               </motion.div>
             ))}
           </div>
+
+          {/* Load More Button */}
+          {hasMore && filteredProducts.length > 0 && !loadingProducts && (
+            <div className="flex justify-center mt-12">
+              <Button
+                onClick={loadMore}
+                variant="outline"
+                className="px-8 py-6 rounded-full border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-white font-bold transition-all hover:scale-105"
+              >
+                Load More Products
+              </Button>
+            </div>
+          )}
+
+          {loadingProducts && page > 0 && (
+            <div className="flex justify-center mt-8">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
 
           {filteredProducts.length === 0 && (
             <div className="text-center py-24 bg-white dark:bg-[#0a0a0a] rounded-3xl border border-zinc-200 dark:border-white/5 shadow-sm dark:shadow-none">
