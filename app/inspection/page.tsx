@@ -161,13 +161,14 @@ export default function InspectionScannerPage() {
                 <ArrowLeft className="w-5 h-5 mr-2" /> Back
             </Button>
 
-            <h1 className="text-2xl font-bold text-white mb-6">Scan Internal QR</h1>
+            <h1 className="text-2xl font-bold text-white mb-6">Scan Internal QR (v1.1)</h1>
 
             {error ? (
                 <Card className="max-w-md w-full bg-red-900/10 border-red-500/50 p-6 text-center">
                     <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h3 className="text-white font-bold mb-2">Scan Failed</h3>
                     <p className="text-red-200 text-sm mb-6">{error}</p>
+                    <p className="text-xs text-red-500/50 mb-2 font-mono break-all">Debug: {error === "Invalid QR Code. This is not a Tradigoo Secure Parcel." ? "GENERIC_CATCH" : error}</p>
                     <Button onClick={reset} className="bg-red-600 hover:bg-red-500 text-white w-full">Try Again</Button>
                 </Card>
             ) : result ? (
