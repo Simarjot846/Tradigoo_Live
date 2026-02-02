@@ -116,28 +116,29 @@ export default function InspectionScannerPage() {
 
                 if (!orderId) throw new Error("Could not extract Order ID from URL");
 
-                // Fetch Order Details from Supabase
+                // Fetch Order Details from Supabase using Secure RPC (bypasses RLS)
                 const supabase = createClient();
                 const { data, error } = await supabase
-                    .from('orders')
-                    .select('id, quantity, product:products(name)')
-                    .eq('id', orderId)
+                    .rpc('verify_order', { input_order_id: orderId })
                     .single();
 
-                if (error || !data) throw new Error("Order not found in public registry");
+                if (error || !data) {
+                    console.error("RPC Error:", error);
+                    throw new Error("Order not found or access denied");
+                }
 
-                // Safely handle product name extraction (Supabase can return array or object depending on relation)
-                const productName = Array.isArray(data.product) ? data.product[0]?.name : (data.product as any)?.name;
+                const rpcData = data as any;
 
                 setResult({
-                    p: productName || "Unknown Product",
-                    q: data.quantity,
-                    id: data.id,
-                    t: new Date().toISOString() // Just as a timestamp for scan
+                    p: rpcData.product_name || "Unknown Product",
+                    q: rpcData.quantity,
+                    id: rpcData.order_id,
+                    t: new Date().toISOString()
                 });
                 toast.success("Public QR Verified!");
                 return;
             }
+
 
             // Check if it's a URL or raw data
             let encryptedString = rawData;
@@ -187,7 +188,7 @@ export default function InspectionScannerPage() {
                 <ArrowLeft className="w-5 h-5 mr-2" /> Back
             </Button>
 
-            <h1 className="text-2xl font-bold text-white mb-6">Scan Internal QR (v1.2)</h1>
+            <h1 className="text-2xl font-bold text-white mb-6">Scan Internal QR (v1.3)</h1>
 
             {error ? (
                 <Card className="max-w-md w-full bg-red-900/10 border-red-500/50 p-6 text-center">
