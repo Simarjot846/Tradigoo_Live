@@ -108,26 +108,44 @@ export default function InspectionScannerPage() {
     const handleScan = (rawData: string) => {
         setScanning(false);
         try {
+            // Check if it's a Public Verification URL (wrong QR type for this scanner)
+            if (rawData.includes("/verify/") && !rawData.includes("?data=")) {
+                throw new Error("This is a Public Verification QR. Please use a standard Camera app or the 'Scan Internal QR' feature is strictly for encrypted internal package codes.");
+            }
+
             // Check if it's a URL or raw data
             let encryptedString = rawData;
             if (rawData.includes("?data=")) {
                 const url = new URL(rawData);
-                encryptedString = decodeURIComponent(url.searchParams.get("data") || "");
+                // CRITICAL FIX: Replace spaces with '+' because URL decoding often turns '+' into ' '
+                // and CryptoJS needs '+' for valid Base64
+                encryptedString = decodeURIComponent(url.searchParams.get("data") || "").replace(/ /g, '+');
+            } else if (rawData.includes(" ")) {
+                // Heuristic: If raw string has spaces but no URL params, it might be a malformed base64 copy-paste
+                encryptedString = rawData.replace(/ /g, '+');
             }
 
             // Decrypt
             const secretKey = "TRADIGOO_SECRET_KEY_PROD";
             const bytes = CryptoJS.AES.decrypt(encryptedString, secretKey);
-            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
 
-            if (!decryptedString) throw new Error("Invalid Tradigoo Encrypted QR");
+            let decryptedString = "";
+            try {
+                decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            } catch (e) {
+                throw new Error("Decryption failed. Key mismatch or data corruption.");
+            }
+
+            if (!decryptedString) throw new Error("Invalid Tradigoo Encrypted QR or Wrong Key");
 
             const data = JSON.parse(decryptedString);
             setResult(data);
             toast.success("Parcel Verified Successfully!");
 
-        } catch (e) {
-            setError("Invalid QR Code. This is not a Tradigoo Secure Parcel.");
+        } catch (e: any) {
+            console.error(e);
+            const msg = e.message || "Invalid QR Code. This is not a Tradigoo Secure Parcel.";
+            setError(msg);
         }
     };
 

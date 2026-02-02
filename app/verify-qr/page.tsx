@@ -35,6 +35,7 @@ function VerifyContent() {
                 if (!isMounted) return;
 
                 // 1. Sanitize Input: Replace spaces with '+' (common URL encoding glitch)
+                // CRITICAL FIX: Base64 strings in URLs often have '+' replaced by space if not encoded perfectly
                 const cleanCipher = dataParam.replace(/ /g, '+');
 
                 // 2. Decrypt
