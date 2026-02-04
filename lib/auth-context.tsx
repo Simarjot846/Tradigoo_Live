@@ -82,16 +82,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Safety timeout - Reduced to 4 seconds as requested for faster fallback
+    // Safety timeout - Increased to 10 seconds as requested
     const timer = setTimeout(() => {
       setLoading((currentLoading) => {
         if (currentLoading) {
-          console.warn("Auth check timed out (4s). Assuming public/guest state.");
+          console.warn("Auth check timed out (10s). Assuming public/guest state.");
           return false;
         }
         return currentLoading;
       });
-    }, 4000);
+    }, 10000);
 
     // Check active session
     const start = performance.now();
