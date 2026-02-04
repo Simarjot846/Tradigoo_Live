@@ -25,6 +25,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Tradigoo - Smart B2B Trading Platform",
   description: "AI-powered secure B2B transaction platform for Indian retailers",
+  verification: {
+    google: "W3BOWeDrvJp5HaWIo-ttCbwpGraJi_njzxt2SjhPtWw",
+  },
 };
 
 import { Suspense } from "react";
