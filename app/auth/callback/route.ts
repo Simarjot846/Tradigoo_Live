@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-server';
+import { createClientWithCookieCollector } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -9,13 +9,28 @@ export async function GET(request: Request) {
     const type = searchParams.get('type'); // type=recovery
 
     if (code) {
-        const supabase = await createClient();
+        const { supabase, cookieActions } = await createClientWithCookieCollector();
         const { error } = await supabase.auth.exchangeCodeForSession(code);
+
         if (!error) {
-            if (type === 'recovery') {
-                return NextResponse.redirect(`${origin}/auth/update-password`);
+            const redirectUrl = type === 'recovery'
+                ? `${origin}/auth/update-password`
+                : `${origin}${next}`;
+
+            const response = NextResponse.redirect(redirectUrl);
+
+            // Apply the collected cookies to the response
+            if (cookieActions && cookieActions.length) {
+                cookieActions.forEach(action => {
+                    response.cookies.set({
+                        name: action.name,
+                        value: action.value,
+                        ...action.options,
+                    });
+                });
             }
-            return NextResponse.redirect(`${origin}${next}`);
+
+            return response;
         }
     }
 

@@ -1,24 +1,9 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-function normalizeCookieOptions(options?: CookieOptions) {
-  const defaultSameSite = process.env.COOKIE_SAME_SITE || 'None';
-  const secureEnv = process.env.COOKIE_SECURE;
-  const secure = secureEnv ? secureEnv === 'true' : true;
-  const domain = process.env.COOKIE_DOMAIN || undefined;
-
-  return {
-    httpOnly: true,
-    secure,
-    sameSite: defaultSameSite as 'lax' | 'none' | 'strict' | undefined,
-    domain,
-    path: '/',
-    ...(options || {}),
-  } as CookieOptions;
-}
-
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({
+  // 1. Create an unmodified response first
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -29,33 +14,32 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
-          const opts = normalizeCookieOptions(options);
-          // Set cookie on the outgoing response only once — do not reassign response.
-          try {
-            response.cookies.set({ name, value, ...opts });
-          } catch (e) {
-            // If cookie can't be set in middleware runtime, ignore but log.
-            console.warn('Failed to set cookie in middleware:', name, e);
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          const opts = normalizeCookieOptions(options);
-          try {
-            response.cookies.set({ name, value: '', maxAge: 0, ...opts });
-          } catch (e) {
-            console.warn('Failed to remove cookie in middleware:', name, e);
-          }
+        setAll(cookiesToSet) {
+          // Update the request cookies (so server components see the new state)
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+          });
+          // Update the response cookies (so the browser sees the new state)
+          response = NextResponse.next({
+            request,
+          });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
         },
       },
     }
   );
 
-  // Refresh session if expired
-  const { data: { user } } = await supabase.auth.getUser();
+  // 2. Refresh the session
+  // This call is critical. It accesses the session, which may trigger a refresh.
+  // If a refresh happens, the `setAll` method above is called, updating `response`.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
     // Unified Dashboard: No role-based redirection needed.
