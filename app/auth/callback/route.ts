@@ -13,9 +13,10 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tradigoo-production.up.railway.app';
             const redirectUrl = type === 'recovery'
-                ? `${origin}/auth/update-password`
-                : `${origin}${next}`;
+                ? `${baseUrl}/auth/update-password`
+                : `${baseUrl}${next}`;
 
             const response = NextResponse.redirect(redirectUrl);
 
