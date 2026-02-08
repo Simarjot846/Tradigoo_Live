@@ -92,7 +92,7 @@ export async function middleware(request: NextRequest) {
     frame-ancestors 'none';
     frame-src https://api.razorpay.com;
     connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.razorpay.com;
-    upgrade-insecure-requests;
+    ${process.env.NODE_ENV === 'development' ? '' : 'upgrade-insecure-requests;'}
   `.replace(/\s{2,}/g, ' ').trim();
 
   response.headers.set('Content-Security-Policy', cspHeader);
