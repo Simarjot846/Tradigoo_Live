@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           // Update the request cookies (so server components see the new state)
-          cookiesToSet.forEach(({ name, value, options }) => {
+          cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
           // Update the response cookies (so the browser sees the new state)

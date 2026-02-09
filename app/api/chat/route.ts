@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
-            console.log("Chatbot: Missing GEMINI_API_KEY");
+
             return NextResponse.json({
                 reply: "I am currently running in demo mode because my AI Brain (GEMINI_API_KEY) is missing. Please add the API key to your .env.local file to unlock my full potential! 🧠✨"
             });

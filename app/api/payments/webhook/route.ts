@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const event = payload.event;
     const paymentEntity = payload.payload.payment.entity;
 
-    console.log('Webhook event:', event);
+
 
     // Use service role client for admin operations
     const supabase = createServiceClient();
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        console.log('Unhandled webhook event:', event);
+
     }
 
     return NextResponse.json({ success: true });

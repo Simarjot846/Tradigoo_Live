@@ -9,7 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Package, Truck, CheckCircle, Clock, AlertCircle, ArrowRight, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { QRScanner } from '@/components/qr-scanner';
+
+import dynamic from 'next/dynamic';
+// Dynamically import QRScanner to avoid loading jsqr (heavy lib) on initial load
+const QRScanner = dynamic(() => import('@/components/qr-scanner').then(mod => mod.QRScanner), {
+    loading: () => <Button size="sm" variant="outline" disabled>Loading Scanner...</Button>,
+    ssr: false
+});
+
 import { toast } from 'sonner';
 
 

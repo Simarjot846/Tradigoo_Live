@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LogOut } from "lucide-react"
+
 
 export function SecuritySettingsForm({ profile }: { profile: any }) {
 

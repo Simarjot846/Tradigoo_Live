@@ -83,7 +83,7 @@ export function QRScanner({ orderId, expectedDetails, onVerify }: QRScannerProps
         // or if it matches a specific format.
         // Let's assume the QR contains the Order ID essentially.
 
-        console.log("Scanned Data:", data);
+
 
         // Simple validation: does it contain order ID or is it a tradigoo encrypted string?
         // If it's the mock string from inspection page, it has 'data='.

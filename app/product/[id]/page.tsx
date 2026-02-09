@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, TrendingUp, Package, Users, ShieldCheck, ShoppingCart, Zap, Star } from 'lucide-react';
-import { mockUsers, MockProduct } from '@/lib/mock-data';
+import { mockUsers } from '@/lib/mock-data';
 import { getDemandBadgeColor } from '@/lib/ai-recommendations';
 import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase-client';
@@ -34,7 +34,7 @@ export default function ProductDetailPage() {
       const id = Array.isArray(params.id) ? params.id[0] : params.id;
       if (!id) return;
 
-      console.log("Fetching product with ID:", id);
+
 
       const supabase = createClient();
       const { data, error } = await supabase

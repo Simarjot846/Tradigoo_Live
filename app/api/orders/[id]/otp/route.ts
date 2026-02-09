@@ -34,7 +34,7 @@ export async function POST(
                 })
                 .eq('id', orderId);
 
-            console.log(`[MOCK SMS] OTP for Order ${orderId}: ${otp}`);
+
 
             return NextResponse.json({ success: true, message: 'OTP sent to registered mobile' });
         }

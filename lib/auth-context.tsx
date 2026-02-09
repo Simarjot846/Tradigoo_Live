@@ -82,15 +82,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Safety timeout - reduced to 5s as getUser should be fast
     const timer = setTimeout(() => {
-      setLoading((currentLoading) => {
-        if (currentLoading) {
-          // If still loading after 5s, assume public.
-          return false;
-        }
-        return currentLoading;
-      });
+      if (mounted) {
+        setLoading((currentLoading) => {
+          if (currentLoading) {
+            // If still loading after 5s, assume public.
+            return false;
+          }
+          return currentLoading;
+        });
+      }
     }, 5000);
 
     const initializeAuth = async () => {
@@ -99,7 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // getUser is more secure and reliable than getSession for auth status
         const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
-        console.log(`[Auth] Check completed in ${(performance.now() - start).toFixed(2)}ms`);
+
+
+        if (!mounted) return;
 
         if (error) {
           // If error (e.g. no session), just finish loading
@@ -109,14 +115,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (authUser) {
           await fetchUserProfile(authUser).then(profile => {
-            if (profile) setUser(profile);
+            if (mounted && profile) setUser(profile);
           });
         }
-      } catch (err) {
+      } catch (err: any) {
+        // Ignore AbortError as it usually happens during hot reloads or strict mode cleanup
+        if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+          console.debug("[Auth] Init aborted (benign)");
+          return;
+        }
         console.error("[Auth] Init error:", err);
       } finally {
-        setLoading(false);
-        clearTimeout(timer);
+        if (mounted) {
+          setLoading(false);
+          clearTimeout(timer);
+        }
       }
     };
 
@@ -125,6 +138,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
+        if (!mounted) return;
+
         if (event === 'SIGNED_OUT') {
           setUser(null);
           setLoading(false);
@@ -144,23 +159,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             // Only fetch if necessary
             const profile = await fetchUserProfile(session.user);
-            setUser(prev => {
-              if (JSON.stringify(prev) === JSON.stringify(profile)) return prev;
-              return profile;
-            });
+            if (mounted) {
+              setUser(prev => {
+                if (JSON.stringify(prev) === JSON.stringify(profile)) return prev;
+                return profile;
+              });
+            }
           } catch (error) {
             console.error("Error updating profile on auth change:", error);
           }
         } else {
           setUser(null);
         }
-        setLoading(false);
-        clearTimeout(timer);
+        if (mounted) {
+          setLoading(false);
+          clearTimeout(timer);
+        }
       }
 
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       clearTimeout(timer);
     };

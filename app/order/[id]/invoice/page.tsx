@@ -28,11 +28,11 @@ export default function InvoicePage() {
         }, 10000);
 
         async function fetchInvoiceData() {
-            console.log(`[Invoice] Fetching data for order ${params.id}. AuthLoading: ${authLoading}, User: ${user?.id}`);
+
 
             // Wait for global auth to finish locally
             if (authLoading) {
-                console.log("[Invoice] Waiting for auth...");
+
                 return;
             }
 
@@ -47,7 +47,7 @@ export default function InvoicePage() {
                 const supabase = createClient();
 
                 // 2. Fetch Order
-                console.log("[Invoice] Querying Supabase for order...");
+
                 const { data: orderData, error: orderError } = await supabase
                     .from('orders')
                     .select(`*, product:products(name, unit)`)
@@ -72,7 +72,7 @@ export default function InvoicePage() {
                 }
 
                 // 4. Fetch Profiles
-                console.log("[Invoice] Fetching profiles...");
+
                 const { data: profiles } = await supabase
                     .from('profiles')
                     .select('*')
@@ -85,7 +85,7 @@ export default function InvoicePage() {
                         setBuyer(profiles.find((p: any) => p.id === orderData.buyer_id) || mockUsers[0]);
                         setSeller(profiles.find((p: any) => p.id === orderData.seller_id) || mockUsers[1]);
                     }
-                    console.log("[Invoice] Data load complete.");
+
                     setLoading(false);
                 }
 

@@ -14,7 +14,14 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ArrowLeft, CheckCircle, Clock, Package, Truck, ShieldCheck, AlertTriangle, Upload, ChevronRight, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { VideoRecorder } from '@/components/video-recorder';
+
+import dynamic from 'next/dynamic';
+// Dynamically import VideoRecorder to reduce bundle size
+const VideoRecorder = dynamic(() => import('@/components/video-recorder').then(mod => mod.VideoRecorder), {
+  loading: () => <div className="h-48 w-full bg-zinc-900 animate-pulse rounded-xl" />,
+  ssr: false
+});
+
 import { toast } from 'sonner';
 
 type OrderStatus = 'payment_in_escrow' | 'shipped' | 'courier_verified' | 'delivered' | 'inspection' | 'completed' | 'disputed';
@@ -78,7 +85,7 @@ export default function OrderTrackingPage() {
         table: 'orders',
         filter: `id=eq.${params.id}`
       }, (payload: any) => {
-        console.log("Real-time update:", payload);
+
         fetchOrder(); // simple re-fetch on change
       })
       .subscribe();

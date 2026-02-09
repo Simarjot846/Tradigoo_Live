@@ -1,4 +1,4 @@
-import { User, Order } from './supabase';
+import { User } from './supabase';
 
 // Legacy Product type for mock data (without production fields)
 export interface MockProduct {
@@ -281,25 +281,4 @@ export const mockUsers: User[] = [
   }
 ];
 
-export const mockOrders: Order[] = [
-  {
-    id: 'order-1',
-    buyer_id: 'user-1',
-    seller_id: 'user-2',
-    product_id: '1',
-    quantity: 100,
-    unit_price: 85,
-    total_amount: 8500,
-    status: 'DELIVERED',
-    razorpay_order_id: null,
-    razorpay_payment_id: null,
-    razorpay_signature: null,
-    otp: '123456',
-    otp_verified: true,
-    inspection_deadline: '2024-12-20T00:00:00Z',
-    dispute_reason: null,
-    dispute_evidence: null,
-    created_at: '2024-12-15T00:00:00Z',
-    updated_at: '2024-12-19T00:00:00Z'
-  }
-];
+
