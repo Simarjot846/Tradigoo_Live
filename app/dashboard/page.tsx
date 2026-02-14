@@ -13,6 +13,7 @@ const BuyerDashboard = dynamic(() => import('@/components/dashboard/buyer-dashbo
 const SellerDashboard = dynamic(() => import('@/components/dashboard/seller-dashboard').then(mod => mod.SellerDashboard), {
   loading: () => <DashboardSkeleton />,
 });
+import { LiveMarketTicker } from "@/components/dashboard/live-market-ticker";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -35,20 +36,25 @@ export default function DashboardPage() {
     return <DashboardSkeleton />; // Show skeleton while redirecting or if unauthenticated
   }
 
-  // Strict Role-Based Rendering
   if (user.role === 'wholesaler') {
     return (
-      <Suspense fallback={<DashboardSkeleton />}>
-        <SellerDashboard />
-      </Suspense>
+      <div className="p-8">
+        <LiveMarketTicker />
+        <Suspense fallback={<DashboardSkeleton />}>
+          <SellerDashboard />
+        </Suspense>
+      </div>
     );
   }
 
   // Default to Buyer Dashboard for retailers or undefined roles
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <BuyerDashboard />
-    </Suspense>
+    <div className="p-8">
+      <LiveMarketTicker />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <BuyerDashboard />
+      </Suspense>
+    </div>
   );
 }
 
