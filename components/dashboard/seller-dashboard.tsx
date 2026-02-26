@@ -8,10 +8,10 @@ import CryptoJS from "crypto-js";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
+import SearchFrequency from "@/components/dashboard/SearchFrequency";
 import QRCode from "qrcode";
 import {
     Dialog,
@@ -196,17 +196,17 @@ export function SellerDashboard() {
                         {/* Custom SVG Chart */}
                         <div className="h-24 w-full flex items-end justify-between gap-2">
                             {[35, 45, 30, 60, 75, 50, 65, 80, 55, 90, 40, 60, 85, 100].map((h, i) => (
-                                <motion.div
+                                <div
                                     key={i}
-                                    initial={{ height: 0 }}
-                                    animate={{ height: `${h}%` }}
-                                    transition={{ delay: i * 0.05, duration: 0.5, type: "spring" }}
+
+
+
                                     className="w-full bg-gradient-to-t from-purple-600/50 to-purple-400 rounded-t-sm hover:from-purple-500 hover:to-white transition-all cursor-pointer relative group/bar"
                                 >
                                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity text-center whitespace-nowrap font-bold">
                                         ₹{h}k
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -258,125 +258,129 @@ export function SellerDashboard() {
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Main Content Grid */}
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Recent Orders Table */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Pending Orders</h2>
-                            <Button variant="ghost" size="sm" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">View All</Button>
-                        </div>
+            <div className="w-full mb-10 mt-6">
+                <SearchFrequency />
+            </div>
 
-                        <div className="rounded-3xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-zinc-900/40 overflow-hidden shadow-sm dark:shadow-none">
-                            <Table>
-                                <TableHeader className="bg-zinc-50 dark:bg-white/5">
-                                    <TableRow className="border-zinc-200 dark:border-white/5 hover:bg-transparent">
-                                        <TableHead className="text-zinc-500 dark:text-zinc-400">Order ID</TableHead>
-                                        <TableHead className="text-zinc-500 dark:text-zinc-400">Product</TableHead>
-                                        <TableHead className="text-zinc-500 dark:text-zinc-400">Amount</TableHead>
-                                        <TableHead className="text-zinc-500 dark:text-zinc-400 text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {pendingOrders.length > 0 ? pendingOrders.map((order) => (
-                                        <TableRow key={order.id} className="border-zinc-100 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/5">
-                                            <TableCell className="font-mono text-zinc-700 dark:text-zinc-300">#{order.id.slice(0, 6)}</TableCell>
-                                            <TableCell className="text-zinc-900 dark:text-white font-medium">{order.product?.name || 'Unknown'}</TableCell>
-                                            <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">₹{order.total_amount?.toLocaleString()}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    {/* Print QR Button */}
-                                                    <Button size="sm" variant="outline" className="h-8 border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 hover:text-blue-700 dark:hover:text-blue-300" onClick={async () => {
-                                                        // ... QR Logic (unchanged)
-                                                        // ... QR Logic (unchanged)
-                                                        try {
-                                                            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-
-                                                            // Payload Construction
-                                                            const payload = JSON.stringify({
-                                                                id: order.id,
-                                                                p: order.product?.name || "Unknown Product",
-                                                                q: order.quantity,
-                                                                t: new Date().toISOString(),
-                                                                salt: crypto.randomUUID()
-                                                            });
-
-                                                            // Encryption
-                                                            const secretKey = "TRADIGOO_SECRET_KEY_PROD";
-                                                            const encrypted = CryptoJS.AES.encrypt(payload, secretKey).toString();
-
-                                                            // Construct URL with encoded data parameter
-                                                            // We replace '+' with '%20' or handle encoding properly because URL params can be tricky with base64
-                                                            const verifyUrl = `${baseUrl}/verify-qr?data=${encodeURIComponent(encrypted)}`;
-
-                                                            const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 300, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
-                                                            const link = document.createElement('a');
-                                                            link.href = qrDataUrl;
-                                                            link.download = `QR-${order.id.slice(0, 8)}.png`;
-                                                            document.body.appendChild(link);
-                                                            link.click();
-                                                            document.body.removeChild(link);
-                                                            toast.success("QR Code Downloaded");
-                                                        } catch (err) { console.error(err); toast.error("Failed to generate QR"); }
-                                                    }}>
-                                                        <div className="flex items-center gap-1">
-                                                            <Package className="w-3.5 h-3.5" />
-                                                            Print QR
-                                                        </div>
-                                                    </Button>
-
-                                                    {/* Mark as Shipped Button */}
-                                                    <Button size="sm" className="h-8 bg-green-600 hover:bg-green-500 text-white border-0" onClick={async () => {
-                                                        const supabase = createClient();
-                                                        toast.info("Verifying Packaging & Handover...");
-                                                        await new Promise(r => setTimeout(r, 1500));
-                                                        const { error } = await supabase.from('orders').update({
-                                                            status: 'shipped', pickup_verified: true, courier_proof: { weight: '2.5kg', packages: 1, seal_condition: 'intact', pickup_time: new Date().toISOString() }
-                                                        }).eq('id', order.id);
-                                                        if (!error) { toast.success("Order Shipped!"); setPendingOrders(prev => prev.filter(o => o.id !== order.id)); } else { toast.error("Failed to update status"); }
-                                                    }}>
-                                                        <Truck className="w-3.5 h-3.5 mr-1" /> Mark Shipped
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    )) : (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-12 text-zinc-500">
-                                                No pending orders action required.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-8">
+                {/* Recent Orders Table */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Pending Orders</h2>
+                        <Button variant="ghost" size="sm" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">View All</Button>
                     </div>
 
-                    {/* Quick Tools Sidebar */}
-                    <div className="space-y-6">
-                        <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden shadow-lg">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                    <div className="rounded-3xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-zinc-900/40 overflow-hidden shadow-sm dark:shadow-none">
+                        <Table>
+                            <TableHeader className="bg-zinc-50 dark:bg-white/5">
+                                <TableRow className="border-zinc-200 dark:border-white/5 hover:bg-transparent">
+                                    <TableHead className="text-zinc-500 dark:text-zinc-400">Order ID</TableHead>
+                                    <TableHead className="text-zinc-500 dark:text-zinc-400">Product</TableHead>
+                                    <TableHead className="text-zinc-500 dark:text-zinc-400">Amount</TableHead>
+                                    <TableHead className="text-zinc-500 dark:text-zinc-400 text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {pendingOrders.length > 0 ? pendingOrders.map((order) => (
+                                    <TableRow key={order.id} className="border-zinc-100 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/5">
+                                        <TableCell className="font-mono text-zinc-700 dark:text-zinc-300">#{order.id.slice(0, 6)}</TableCell>
+                                        <TableCell className="text-zinc-900 dark:text-white font-medium">{order.product?.name || 'Unknown'}</TableCell>
+                                        <TableCell className="text-emerald-600 dark:text-emerald-400 font-bold">₹{order.total_amount?.toLocaleString()}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                {/* Print QR Button */}
+                                                <Button size="sm" variant="outline" className="h-8 border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 hover:text-blue-700 dark:hover:text-blue-300" onClick={async () => {
+                                                    // ... QR Logic (unchanged)
+                                                    // ... QR Logic (unchanged)
+                                                    try {
+                                                        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 
-                            <h3 className="text-lg font-bold mb-2 relative z-10">Grow your business</h3>
-                            <p className="text-blue-100 text-sm mb-6 relative z-10 leading-relaxed">
-                                Unlock 0% commission on your next 50 orders by verifying your GST today.
-                            </p>
-                            <Button
-                                onClick={() => router.push('/profile?tab=trust')}
-                                className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold border-0 relative z-10"
-                            >
-                                Verify Now <ArrowUpRight className="w-4 h-4 ml-1" />
-                            </Button>
-                        </div>
+                                                        // Payload Construction
+                                                        const payload = JSON.stringify({
+                                                            id: order.id,
+                                                            p: order.product?.name || "Unknown Product",
+                                                            q: order.quantity,
+                                                            t: new Date().toISOString(),
+                                                            salt: crypto.randomUUID()
+                                                        });
 
-                        <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 shadow-sm dark:shadow-none">
-                            <h3 className="font-bold text-zinc-900 dark:text-white mb-4">Quick Links</h3>
-                            <div className="space-y-2">
-                                <QuickLink icon={Settings} label="Store Settings" onClick={() => router.push('/settings')} />
-                                <QuickLink icon={Clock} label="Order History" onClick={() => router.push('/orders-received')} />
-                                <QuickLink icon={Truck} label="Courier Partners" onClick={() => { }} />
-                            </div>
+                                                        // Encryption
+                                                        const secretKey = "TRADIGOO_SECRET_KEY_PROD";
+                                                        const encrypted = CryptoJS.AES.encrypt(payload, secretKey).toString();
+
+                                                        // Construct URL with encoded data parameter
+                                                        // We replace '+' with '%20' or handle encoding properly because URL params can be tricky with base64
+                                                        const verifyUrl = `${baseUrl}/verify-qr?data=${encodeURIComponent(encrypted)}`;
+
+                                                        const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 300, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+                                                        const link = document.createElement('a');
+                                                        link.href = qrDataUrl;
+                                                        link.download = `QR-${order.id.slice(0, 8)}.png`;
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        document.body.removeChild(link);
+                                                        toast.success("QR Code Downloaded");
+                                                    } catch (err) { console.error(err); toast.error("Failed to generate QR"); }
+                                                }}>
+                                                    <div className="flex items-center gap-1">
+                                                        <Package className="w-3.5 h-3.5" />
+                                                        Print QR
+                                                    </div>
+                                                </Button>
+
+                                                {/* Mark as Shipped Button */}
+                                                <Button size="sm" className="h-8 bg-green-600 hover:bg-green-500 text-white border-0" onClick={async () => {
+                                                    const supabase = createClient();
+                                                    toast.info("Verifying Packaging & Handover...");
+                                                    await new Promise(r => setTimeout(r, 1500));
+                                                    const { error } = await supabase.from('orders').update({
+                                                        status: 'shipped', pickup_verified: true, courier_proof: { weight: '2.5kg', packages: 1, seal_condition: 'intact', pickup_time: new Date().toISOString() }
+                                                    }).eq('id', order.id);
+                                                    if (!error) { toast.success("Order Shipped!"); setPendingOrders(prev => prev.filter(o => o.id !== order.id)); } else { toast.error("Failed to update status"); }
+                                                }}>
+                                                    <Truck className="w-3.5 h-3.5 mr-1" /> Mark Shipped
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center py-12 text-zinc-500">
+                                            No pending orders action required.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+
+                {/* Quick Tools Sidebar */}
+                <div className="space-y-6">
+                    <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden shadow-lg">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+                        <h3 className="text-lg font-bold mb-2 relative z-10">Grow your business</h3>
+                        <p className="text-blue-100 text-sm mb-6 relative z-10 leading-relaxed">
+                            Unlock 0% commission on your next 50 orders by verifying your GST today.
+                        </p>
+                        <Button
+                            onClick={() => router.push('/profile?tab=trust')}
+                            className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold border-0 relative z-10"
+                        >
+                            Verify Now <ArrowUpRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
+
+                    <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                        <h3 className="font-bold text-zinc-900 dark:text-white mb-4">Quick Links</h3>
+                        <div className="space-y-2">
+                            <QuickLink icon={Settings} label="Store Settings" onClick={() => router.push('/settings')} />
+                            <QuickLink icon={Clock} label="Order History" onClick={() => router.push('/orders-received')} />
+                            <QuickLink icon={Truck} label="Courier Partners" onClick={() => { }} />
                         </div>
                     </div>
                 </div>

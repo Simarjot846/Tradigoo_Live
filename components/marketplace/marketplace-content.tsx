@@ -55,13 +55,13 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
         }
     }, [searchParams]);
 
-    // Load products from Supabase (Client-side pagination/filtering if needed later, but mostly reliance on initial + client filter for now)
+    // Load products from Supabase (Client-side pagination/filtering if needed later, but mostly reliance on  + client filter for now)
     // Re-implemented to support "Load More" fetching client-side
     const [page, setPage] = useState(0);
     const ITEMS_PER_PAGE = 24;
     const [hasMore, setHasMore] = useState(true);
 
-    // If initial products are less than page size, no more to load
+    // If  products are less than page size, no more to load
     useEffect(() => {
         if (initialProducts.length < ITEMS_PER_PAGE) {
             setHasMore(false);

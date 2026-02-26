@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -14,11 +13,11 @@ export function TrustCTA() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px]" />
 
             <div className="container px-6 mx-auto relative z-10 text-center">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6 }}
-                    viewport={{ once: true }}
+                <div
+                    
+                    
+                    
+                    
                     className="max-w-4xl mx-auto"
                 >
                     <h2 className="text-4xl md:text-6xl font-bold mb-8 text-white tracking-tight">
@@ -39,7 +38,7 @@ export function TrustCTA() {
                     <p className="mt-8 text-sm text-gray-500">
                         No credit card required • <span className="text-green-500">Verified Suppliers Only</span>
                     </p>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

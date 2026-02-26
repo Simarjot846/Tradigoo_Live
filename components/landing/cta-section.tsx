@@ -2,43 +2,32 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 export function CTASection() {
     return (
         <section className="py-32 px-6">
             <div className="container mx-auto max-w-6xl">
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    whileHover={{ scale: 1.02 }}
+                <div
+                    
+                    
+                    
+                    
+                    
                     className="relative rounded-[3rem] overflow-hidden bg-zinc-900 dark:bg-black border border-zinc-800 dark:border-white/10 p-12 md:p-32 text-center group shadow-2xl transition-all duration-500"
                 >
                     {/* Animated Elements */}
                     <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-20 mask-image-gradient-to-b" />
 
                     {/* Animated Blobs */}
-                    <motion.div
-                        animate={{
-                            scale: [1, 1.2, 1],
-                            opacity: [0.2, 0.4, 0.2],
-                            x: [0, 50, 0],
-                            y: [0, -50, 0]
-                        }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                    <div
+                        
+                        
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/30 blur-[120px] rounded-full pointer-events-none"
                     />
-                    <motion.div
-                        animate={{
-                            scale: [1.2, 1, 1.2],
-                            opacity: [0.1, 0.3, 0.1],
-                            x: [0, -30, 0],
-                            y: [0, 30, 0]
-                        }}
-                        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                    <div
+                        
+                        
                         className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none"
                     />
 
@@ -64,7 +53,7 @@ export function CTASection() {
                             </Button>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, PlayCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,10 +17,10 @@ export function Hero() {
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
 
             <div className="container relative z-10 px-6 mx-auto text-center">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                <div
+                    
+                    
+                    
                     className="mb-8"
                 >
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8 hover:bg-white/10 transition-colors cursor-default">
@@ -58,13 +57,13 @@ export function Hero() {
                             Watch Demo
                         </Button>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Dashboard Preview / Floating UI */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 40 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+                <div
+                    
+                    
+                    
                     className="relative mx-auto max-w-5xl mt-16 perspective-1000"
                 >
                     <div className="relative rounded-xl border border-white/10 bg-[#0A0A0A]/50 backdrop-blur-xl shadow-2xl p-2 md:p-4 rotate-x-12 transform-gpu transition-all duration-500 hover:rotate-0">
@@ -77,7 +76,7 @@ export function Hero() {
                         {/* Overlay Gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent h-full w-full pointer-events-none" />
                     </div>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

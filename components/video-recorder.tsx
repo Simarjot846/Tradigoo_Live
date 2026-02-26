@@ -53,7 +53,7 @@ export function VideoRecorder({ onRecordingComplete }: VideoRecorderProps) {
         } catch (err: any) {
             console.error("Camera/Audio Error:", err);
 
-            // If the initial attempt fails, try video only
+            // If the  attempt fails, try video only
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: true,

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,23 +57,23 @@ function ForgotPasswordContent() {
                 <Link href="/auth/login" className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 mb-8 transition-colors">
                     ← Back to login
                 </Link>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                <div
+                    
+                    
+                    
                 >
                     <div className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 mx-auto lg:mx-0 shadow-lg">
                         <span className="text-white font-bold text-xl">?</span>
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Forgot Password?</h1>
                     <p className="text-zinc-500">Enter your email and we'll send you a reset link.</p>
-                </motion.div>
+                </div>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+            <div
+                
+                
+                
             >
                 {success ? (
                     <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
@@ -121,7 +120,7 @@ function ForgotPasswordContent() {
                         </Button>
                     </form>
                 )}
-            </motion.div>
+            </div>
         </AuthLayout>
     );
 }

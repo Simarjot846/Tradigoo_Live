@@ -4,9 +4,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles, TrendingUp, ShoppingCart, ArrowRight, ShieldCheck } from "lucide-react";
+import { Search, Sparkles, TrendingUp, ShoppingCart, ArrowRight, ShieldCheck, Leaf } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -16,6 +15,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import React, { memo, useCallback } from "react";
+import GreenScoreMeter from "@/components/shared/GreenScoreMeter";
+import LiveDemandCard from "@/components/dashboard/LiveDemandCard";
+import TopWholesalers from "@/components/dashboard/TopWholesalers";
+import SeasonalTrends from "@/components/dashboard/SeasonalTrends";
 
 // Helper for emojis
 function getCategoryEmoji(category: string): string {
@@ -38,6 +41,12 @@ function getCategoryEmoji(category: string): string {
 export function BuyerDashboard() {
     const { user } = useAuth();
     const router = useRouter();
+
+    // AI Trade Brain State
+    const [aiQuery, setAiQuery] = useState("");
+    const [aiResponse, setAiResponse] = useState<string | null>(null);
+    const [aiLoading, setAiLoading] = useState(false);
+
     const { data: products = [], isLoading: loading } = useQuery({
         queryKey: ['products'],
         queryFn: async () => {
@@ -55,9 +64,25 @@ export function BuyerDashboard() {
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
-    const highDemandProducts = products.slice(0, 3);
-    const recommendedProducts = products.slice(3, 8);
-    const marketplacePreview = products;
+    const recommendedProducts = products.slice(0, 5);
+    const marketplacePreview = products.slice(5, 9);
+
+    const handleAITradeBrain = async () => {
+        if (!aiQuery) return;
+        setAiLoading(true);
+        try {
+            const res = await fetch("/api/trade-brain", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: aiQuery })
+            });
+            const data = await res.json();
+            setAiResponse(data.recommendation);
+        } catch (e) {
+            setAiResponse("Could not reach Pathway/Gemini at the moment.");
+        }
+        setAiLoading(false);
+    };
 
     if (loading) {
         return <DashboardSkeleton />;
@@ -65,39 +90,79 @@ export function BuyerDashboard() {
 
     return (
         <div className="min-h-screen pb-20 dark:bg-zinc-950 bg-background relative selection:bg-blue-500/30 transition-colors duration-300">
-            {/* Design System: Grainy Background Effects */}
             {/* Design System: Simple Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/5 via-zinc-50 to-zinc-100 dark:from-blue-900/20 dark:via-zinc-950 dark:to-zinc-900" />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/5 via-zinc-50 to-zinc-100 dark:from-emerald-900/10 dark:via-zinc-950 dark:to-zinc-900" />
             </div>
 
             <div className="container mx-auto px-6 py-10 relative z-10">
-                {/* Welcome Hero */}
-                <div className="flex flex-col items-start gap-4 mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
-                        Welcome back, <span className="text-blue-600 dark:text-blue-500">{user?.name}</span>
-                    </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-lg">
-                        Find the best products for your shop.
-                    </p>
+
+                {/* Hackathon Header Elements */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+                    <div className="flex flex-col items-start gap-4">
+                        <Badge className="bg-emerald-500 text-white hover:bg-emerald-600 gap-2 px-3 py-1 text-sm border-0 animate-fade-in"><Leaf className="w-4 h-4" /> Hack for Green Bharat Active</Badge>
+                        <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+                            Welcome, <span className="text-emerald-600 dark:text-emerald-500">{user?.name}</span>
+                        </h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-lg">
+                            Source sustainably with Pathway Real-Time intelligence.
+                        </p>
+                    </div>
+                    {/* Live Green Score Component Added Here */}
+                    <div className="w-full md:w-80">
+                        <GreenScoreMeter />
+                    </div>
+                </div>
+
+                {/* AI Trade Brain & Live Pathway Data */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+                    <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/20 shadow-lg animate-fade-in">
+                        <h2 className="text-xl font-bold dark:text-white flex items-center gap-2 mb-4">
+                            <Sparkles className="w-6 h-6 text-emerald-500" /> Pathway Smart Matching Engine
+                        </h2>
+                        <div className="flex gap-2 mb-4">
+                            <Input
+                                placeholder="E.g. Find organic cotton near Punjab with highest green score..."
+                                className="bg-zinc-100 dark:bg-zinc-950 border-emerald-500/30"
+                                value={aiQuery}
+                                onChange={(e) => setAiQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAITradeBrain()}
+                            />
+                            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleAITradeBrain} disabled={aiLoading}>
+                                {aiLoading ? 'Thinking...' : 'Match'}
+                            </Button>
+                        </div>
+                        {aiResponse && (
+                            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-800 dark:text-emerald-200 text-sm animate-fade-in">
+                                <strong>Agentic Recommendation (Vector RAG):</strong> {aiResponse}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="w-full">
+                        <LiveDemandCard />
+                    </div>
+                </div>
+
+                {/* Additional Pathway Dashboard Streams */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+                    <TopWholesalers />
+                    <SeasonalTrends />
                 </div>
 
                 {/* AI Recommendations Section */}
                 <section className="mb-16">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                                <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Recommended for You</h2>
-                                <p className="text-sm text-zinc-500">Based on your location & sales history</p>
+                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Sustainable Picks For You</h2>
+                                <p className="text-sm text-zinc-500">Live Pathway Index Recommendations</p>
                             </div>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="outline" className="border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 gap-2" onClick={() => router.push('/inspection')}>
-                                <ShieldCheck className="w-4 h-4" /> Scan Internal QR
-                            </Button>
                             <Button variant="ghost" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white group" onClick={() => router.push('/marketplace')}>
                                 View Marketplace <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Button>
@@ -113,49 +178,6 @@ export function BuyerDashboard() {
                         <ScrollBar orientation="horizontal" className="bg-zinc-800/50" />
                     </ScrollArea>
                 </section>
-
-                {/* Categories Grid (Discovery) */}
-                <section>
-                    <h2 className="text-xl font-bold mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
-                        Browse top Categories
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {['Electronics', 'Fashion', 'Home & Kitchen', 'Beauty'].map((cat, i) => (
-                            <motion.div
-                                key={i}
-                                whileHover={{ y: -5 }}
-                                transition={{ type: "spring", stiffness: 300 }}
-                                onClick={() => router.push(`/marketplace?category=${encodeURIComponent(cat)}`)}
-                            >
-                                <Card className="bg-white dark:bg-white/[0.03] border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/[0.08] hover:border-zinc-300 dark:hover:border-white/10 cursor-pointer h-40 group relative overflow-hidden shadow-sm dark:shadow-none">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                    <CardContent className="flex flex-col items-center justify-center h-full relative z-10">
-                                        <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                            <span className="text-2xl">
-                                                {cat === 'Electronics' ? '⌚' : cat === 'Fashion' ? '👕' : cat === 'Beauty' ? '🧴' : '🏠'}
-                                            </span>
-                                        </div>
-                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors">{cat}</span>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Popular Products Grid (Discovery) */}
-                <section className="mt-16">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            Explore Marketplace
-                        </h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {marketplacePreview.map((p, i) => (
-                            <ProductGridItem key={p.id} product={p} index={i} />
-                        ))}
-                    </div>
-                </section>
             </div>
         </div>
     );
@@ -164,11 +186,11 @@ export function BuyerDashboard() {
 const ProductGridItem = memo(function ProductGridItem({ product, index }: { product: any, index: number }) {
     const router = useRouter();
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            viewport={{ once: true }}
+        <div
+
+
+
+
             onClick={() => router.push(`/product/${product.id}`)}
         >
             <div className="group rounded-2xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 overflow-hidden hover:border-zinc-300 dark:hover:border-white/10 hover:shadow-lg dark:hover:shadow-none transition-all cursor-pointer h-full flex flex-col">
@@ -197,7 +219,7 @@ const ProductGridItem = memo(function ProductGridItem({ product, index }: { prod
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </div>
     )
 });
 
@@ -206,11 +228,11 @@ const ProductCard = memo(function ProductCard({ product, index }: { product: any
     const router = useRouter();
     const { addToCart } = useCart();
     return (
-        <motion.div
+        <div
             className="inline-block w-[320px]"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05 }}
+
+
+
             onClick={() => router.push(`/product/${product.id}`)}
         >
             <div className="group h-full flex flex-col rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 overflow-hidden hover:border-blue-500/30 hover:shadow-lg transition-all cursor-pointer relative shadow-sm dark:shadow-none">
@@ -262,7 +284,7 @@ const ProductCard = memo(function ProductCard({ product, index }: { product: any
                     </Button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     )
 });
 

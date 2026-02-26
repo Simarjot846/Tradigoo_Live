@@ -275,8 +275,16 @@
   }
 }
 
-/* Force Disable All Animations */
-* {
-  animation-duration: 0s !important;
-  transition-duration: 0s !important;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

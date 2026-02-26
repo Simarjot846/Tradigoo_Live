@@ -1,7 +1,6 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,11 @@ const ProductCard = memo(({ product, addToCart, getCategoryEmoji }: ProductCardP
     const router = useRouter();
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            whileHover={{ y: -4 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        <div
+            
+            
+            
+            
             onClick={() => router.push(`/product/${product.id}`)}
             className="group bg-white dark:bg-[#0f0f0f] border border-zinc-200 dark:border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(37,99,235,0.15)] transition-all cursor-pointer flex flex-col relative shadow-sm dark:shadow-none"
         >
@@ -90,7 +89,7 @@ const ProductCard = memo(({ product, addToCart, getCategoryEmoji }: ProductCardP
                     </Button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 });
 

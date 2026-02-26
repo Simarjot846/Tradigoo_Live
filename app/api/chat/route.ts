@@ -8,6 +8,8 @@ export async function POST(req: Request) {
         const { message, history } = await req.json();
 
 
+        // Gemini requires history to start with a 'user' role.
+        // We remove the  'model' welcome message if present.
         let validHistory = history || [];
         if (validHistory.length > 0 && (validHistory[0].role === 'model' || validHistory[0].role === 'assistant')) {
             validHistory = validHistory.slice(1);

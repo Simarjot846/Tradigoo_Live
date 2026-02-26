@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase-client';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function ProfilePage() {
     const { user, loading: authLoading } = useAuth();
@@ -61,10 +60,10 @@ export default function ProfilePage() {
 
 
             <main className="relative z-10 container mx-auto px-6 py-10 max-w-5xl">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                <div
+                    
+                    
+                    
                 >
                     <ProfileHeader profile={profile} onUpdate={fetchProfile} />
                     <ProfileTabs profile={profile} onUpdate={fetchProfile} />
@@ -88,7 +87,7 @@ export default function ProfilePage() {
                             </button>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </main>
         </div>
     );

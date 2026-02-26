@@ -25,7 +25,7 @@ function VerifyContent() {
             }
 
             try {
-                // Dynamic import to reduce initial bundle size
+                // Dynamic import to reduce  bundle size
                 // and ensure UI renders loading state before heavy work starts
                 const CryptoJS = (await import("crypto-js")).default;
 

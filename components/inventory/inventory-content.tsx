@@ -6,7 +6,6 @@ import { Plus, Search, Filter, MoreHorizontal, ArrowLeft, Trash2 } from "lucide-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-client";
@@ -39,7 +38,7 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
         setLoading(false);
     };
 
-    // We don't need initial fetch effect anymore since we get data from props
+    // We don't need  fetch effect anymore since we get data from props
     // But we might want to re-fetch if user changes (though usually page reloads)
     // Keeping it simple for now, relying on Server Component data.
 
@@ -76,19 +75,19 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" /> Back
                         </Button>
-                        <motion.h1
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
+                        <h1
+                            
+                            
                             className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight"
                         >
                             My Products
-                        </motion.h1>
+                        </h1>
                         <p className="text-zinc-500 dark:text-zinc-400 mt-2">Manage your inventory, prices, and stock levels.</p>
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                    <div
+                        
+                        
                     >
                         <AddProductDialog onProductAdded={fetchProducts}>
                             <Button size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-transform hover:scale-105">
@@ -96,7 +95,7 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                                 Add New Product
                             </Button>
                         </AddProductDialog>
-                    </motion.div>
+                    </div>
                 </div>
 
                 {/* Filters */}
@@ -115,10 +114,10 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                 </div>
 
                 {/* Table */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                <div
+                    
+                    
+                    
                     className="rounded-2xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-white/[0.02] backdrop-blur-md overflow-visible shadow-lg dark:shadow-2xl"
                 >
                     <Table>
@@ -190,7 +189,7 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                             )}
                         </TableBody>
                     </Table>
-                </motion.div>
+                </div>
             </div>
         </div>
     );

@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, TrendingUp, Package, Users, ShieldCheck, ShoppingCart, Zap, Star } from 'lucide-react';
 import { mockUsers } from '@/lib/mock-data';
 import { getDemandBadgeColor } from '@/lib/ai-recommendations';
-import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase-client';
 
 export default function ProductDetailPage() {
@@ -134,9 +133,9 @@ export default function ProductDetailPage() {
 
 
       <main className="container mx-auto px-6 py-10 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div
+          
+          
           className="mb-8"
         >
           <Button
@@ -147,15 +146,15 @@ export default function ProductDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Marketplace
           </Button>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Left Column: Image & AI Insights */}
           <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <div
+              
+              
+              
             >
               <div className="aspect-video rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 border border-white/10 flex items-center justify-center relative overflow-hidden group">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-20" />
@@ -178,12 +177,12 @@ export default function ProductDetailPage() {
                   </Badge>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+            <div
+              
+              
+              
               className="p-6 rounded-3xl bg-white dark:bg-gradient-to-br dark:from-blue-500/10 dark:to-purple-500/5 border border-zinc-200 dark:border-blue-500/20 backdrop-blur-sm shadow-sm dark:shadow-none"
             >
               <div className="flex items-center gap-3 mb-4">
@@ -205,15 +204,15 @@ export default function ProductDetailPage() {
                   <span>Top Rated Supplier</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Right Column: Details & Order Form */}
           <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+            <div
+              
+              
+              
             >
               <div className="mb-6">
                 <div className="flex items-center gap-3 text-zinc-500 mb-2 text-sm font-medium">
@@ -230,17 +229,11 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Stats Grid */}
-              <motion.div
+              <div
                 className="grid grid-cols-2 gap-3 mb-8"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: { opacity: 0 },
-                  visible: {
-                    opacity: 1,
-                    transition: { staggerChildren: 0.1, delayChildren: 0.4 }
-                  }
-                }}
+                
+                
+                
               >
                 {[
                   { label: "Expected Margin", value: `~${product.expected_margin}%`, color: "text-green-600 dark:text-green-400" },
@@ -248,12 +241,9 @@ export default function ProductDetailPage() {
                   { label: "Suppliers", value: product.supplier_count, color: "text-zinc-900 dark:text-white" },
                   { label: "Base Price", value: `₹${product.base_price}`, sub: `/${product.unit}`, color: "text-zinc-900 dark:text-white" }
                 ].map((stat, i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    variants={{
-                      hidden: { opacity: 0, scale: 0.8 },
-                      visible: { opacity: 1, scale: 1 }
-                    }}
+                    
                     className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:bg-white/10 transition-colors shadow-sm dark:shadow-none"
                   >
                     <div className="text-zinc-500 text-xs font-medium uppercase tracking-wider mb-1">{stat.label}</div>
@@ -262,9 +252,9 @@ export default function ProductDetailPage() {
                       {stat.sub && i === 3 ? <span className="text-sm text-zinc-500 font-normal">{stat.sub}</span> : null}
                       {i === 1 ? <span className="text-sm text-zinc-500 font-normal hidden"></span> : null}
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* Order Card */}
               <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 backdrop-blur-xl shadow-lg dark:shadow-2xl">
@@ -320,7 +310,7 @@ export default function ProductDetailPage() {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </main>

@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
 
     if (error) {
-      // Ignore 'Row not found' (PGRST116) as it might happen during initial signup before trigger
+      // Ignore 'Row not found' (PGRST116) as it might happen during  signup before trigger
       if (error.code === 'PGRST116') {
         console.warn('Profile missing (PGRST116). Auto-creating profile for:', authUser.id);
 

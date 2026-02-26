@@ -3,7 +3,6 @@
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function AuthErrorPage() {
     return (
@@ -20,9 +19,9 @@ export default function AuthErrorPage() {
                 </div>
             }
         >
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+            <div
+                
+                
                 className="text-center"
             >
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -39,7 +38,7 @@ export default function AuthErrorPage() {
                         Back to Login
                     </Link>
                 </Button>
-            </motion.div>
+            </div>
         </AuthLayout>
     );
 }

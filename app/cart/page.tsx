@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -136,11 +135,11 @@ export default function CartPage() {
                         {/* Cart Items List */}
                         <div className="lg:col-span-2 space-y-4">
                             {cartItems.map((item, i) => (
-                                <motion.div
+                                <div
                                     key={item.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.1 }}
+                                    
+                                    
+                                    
                                 >
                                     <Card className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 p-6 backdrop-blur-md hover:border-zinc-300 dark:hover:border-white/10 transition-colors shadow-sm dark:shadow-none">
                                         <div className="flex flex-col md:flex-row gap-6 items-center">
@@ -181,15 +180,15 @@ export default function CartPage() {
                                             </Button>
                                         </div>
                                     </Card>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
 
                         {/* Order Summary */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
+                        <div
+                            
+                            
+                            
                         >
                             <Card className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 p-8 backdrop-blur-md sticky top-24 shadow-sm dark:shadow-none">
                                 <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">Order Summary</h2>
@@ -228,7 +227,7 @@ export default function CartPage() {
                                     Payments protected by Escrow
                                 </p>
                             </Card>
-                        </motion.div>
+                        </div>
                     </div>
                 )}
             </div>

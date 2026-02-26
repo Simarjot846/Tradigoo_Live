@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ShieldCheck, CreditCard, CheckCircle2, AlertCircle, Building2, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase-client';
 import { mockUsers } from '@/lib/mock-data';
-import { motion } from 'framer-motion';
 
 export default function OrderConfirmPage() {
   const { user, loading } = useAuth();
@@ -188,9 +187,9 @@ export default function OrderConfirmPage() {
 
 
       <main className="container mx-auto px-6 py-10 relative z-10 max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div
+          
+          
           className="mb-8"
         >
           <Button
@@ -206,17 +205,17 @@ export default function OrderConfirmPage() {
             Confirm Your Order
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400 mt-2">Review details before initiating secure escrow payment.</p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
 
             {/* Order Summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <div
+              
+              
+              
               className="p-6 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl shadow-sm dark:shadow-none"
             >
               <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
@@ -251,14 +250,14 @@ export default function OrderConfirmPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Supplier Info */}
             {displaySeller && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+              <div
+                
+                
+                
                 className="p-6 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl shadow-sm dark:shadow-none"
               >
                 <div className="flex items-center justify-between mb-6">
@@ -284,16 +283,16 @@ export default function OrderConfirmPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
 
           {/* Sidebar: Payment & Security */}
           <div className="lg:col-span-1 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+            <div
+              
+              
+              
               className="p-6 rounded-3xl bg-white dark:bg-gradient-to-br dark:from-blue-900/20 dark:to-zinc-900/50 border border-blue-500/10 dark:border-blue-500/20 backdrop-blur-xl relative overflow-hidden shadow-lg dark:shadow-none"
             >
               <div className="absolute top-0 right-0 p-32 bg-blue-500/5 dark:bg-blue-500/10 blur-[60px] rounded-full mix-blend-screen pointer-events-none" />
@@ -351,7 +350,7 @@ export default function OrderConfirmPage() {
                   By paying, you agree to Tradigoo's <span className="text-zinc-300 underline cursor-pointer">Terms of Service</span>
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </main>

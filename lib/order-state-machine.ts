@@ -19,7 +19,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
     'PAYMENT_HELD': ['SHIPPED', 'CANCELLED'],
     'SHIPPED': ['DELIVERED', 'DISPUTED'], // Buyers can dispute if not delivered? No, usually delivered first.
     'DELIVERED': ['OTP_CONFIRMED', 'DISPUTED'], // Otp confirmed OR dispute (e.g. wrong item)
-    'OTP_CONFIRMED': ['INSPECTION_PENDING', 'DISPUTED'], // Auto transition or dispute
+    'OTP_CONFIRMED': ['INSPECTION_PENDING', 'DISPUTED'], // Auto  or dispute
     'INSPECTION_PENDING': ['PAYMENT_RELEASED', 'DISPUTED'], // Auto release or dispute raised
     'PAYMENT_RELEASED': [], // Terminal state
     'DISPUTED': ['PAYMENT_RELEASED', 'REFUNDED'], // Admin resolution

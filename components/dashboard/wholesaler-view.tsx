@@ -7,7 +7,6 @@ import { Plus, Package, TrendingUp, Users, DollarSign, Search, Filter, MoreHoriz
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 
 export function WholesalerView() {
     const { user } = useAuth();
@@ -22,44 +21,44 @@ export function WholesalerView() {
             <section className="relative pt-20 pb-16">
                 <div className="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+                    <div
+                        
+                        
+                        
                     >
                         <Badge className="mb-6 bg-zinc-900/50 text-zinc-300 border-zinc-800 backdrop-blur-md px-4 py-1.5 hover:bg-zinc-800/50 transition-colors">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
                             Live for all retailers in India
                         </Badge>
-                    </motion.div>
+                    </div>
 
-                    <motion.h1
+                    <h1
                         className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-white"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
+                        
+                        
+                        
                     >
                         Trade Smarter. <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x">
                             Grow Faster.
                         </span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.p
+                    <p
                         className="text-zinc-400 max-w-2xl text-lg md:text-xl mb-10 leading-relaxed"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
+                        
+                        
+                        
                     >
                         Welcome back, <span className="text-white font-semibold">{user?.business_name || 'Vicky Collection'}</span>.
                         The first AI-powered B2B platform that handles sourcing, trust, and logistics. Zero fraud. Zero guesswork.
-                    </motion.p>
+                    </p>
 
-                    <motion.div
+                    <div
                         className="flex flex-col sm:flex-row gap-4"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
+                        
+                        
+                        
                     >
                         <Button size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-base font-medium shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all">
                             <Plus className="w-5 h-5 mr-2" />
@@ -68,7 +67,7 @@ export function WholesalerView() {
                         <Button size="lg" variant="outline" className="h-12 px-8 border-zinc-700 bg-transparent text-white hover:bg-white/5 rounded-full text-base font-medium">
                             View Marketplace
                         </Button>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -177,10 +176,10 @@ export function WholesalerView() {
 
 function StatsCard({ title, value, trend, icon: Icon, delay }: any) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.4 }}
+        <div
+            
+            
+            
         >
             <Card className="bg-zinc-900/40 border-zinc-800/60 hover:border-purple-500/30 transition-all duration-300 group h-32 flex flex-col justify-between backdrop-blur-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-0">
@@ -194,6 +193,6 @@ function StatsCard({ title, value, trend, icon: Icon, delay }: any) {
                     <p className="text-xs text-zinc-500 font-medium">{trend}</p>
                 </CardContent>
             </Card>
-        </motion.div>
+        </div>
     );
 }

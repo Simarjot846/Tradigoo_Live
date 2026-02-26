@@ -7,11 +7,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Package, Truck, CheckCircle, Clock, AlertCircle, ArrowRight, Search } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 import dynamic from 'next/dynamic';
-// Dynamically import QRScanner to avoid loading jsqr (heavy lib) on initial load
+// Dynamically import QRScanner to avoid loading jsqr (heavy lib) on  load
 const QRScanner = dynamic(() => import('@/components/qr-scanner').then(mod => mod.QRScanner), {
     loading: () => <Button size="sm" variant="outline" disabled>Loading Scanner...</Button>,
     ssr: false
@@ -109,11 +108,11 @@ export default function MyOrdersPage() {
                 ) : (
                     <div className="space-y-4">
                         {orders.map((order, i) => (
-                            <motion.div
+                            <div
                                 key={order.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
+                                
+                                
+                                
                                 onClick={() => router.push(`/order/${order.id}`)}
                                 className="cursor-pointer"
                             >
@@ -205,7 +204,7 @@ export default function MyOrdersPage() {
                                         <ArrowRight className="text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-white transition-colors hidden sm:block shrink-0" />
                                     </div>
                                 </Card>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 )}

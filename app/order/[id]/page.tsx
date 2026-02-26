@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ArrowLeft, CheckCircle, Clock, Package, Truck, ShieldCheck, AlertTriangle, Upload, ChevronRight, Copy } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import dynamic from 'next/dynamic';
 // Dynamically import VideoRecorder to reduce bundle size
@@ -284,9 +283,9 @@ export default function OrderTrackingPage() {
 
 
       <main className="container mx-auto px-6 py-10 relative z-10 max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div
+          
+          
           className="mb-8"
         >
           <Button
@@ -312,13 +311,13 @@ export default function OrderTrackingPage() {
               {getStatusLabel(orderData.status)}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Progress Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+        <div
+          
+          
+          
           className="p-8 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl mb-8 relative overflow-hidden shadow-sm dark:shadow-none"
         >
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
@@ -335,17 +334,17 @@ export default function OrderTrackingPage() {
 
               return (
                 <div key={step.status} className="flex flex-col items-center text-center relative">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2 + (index * 0.1) }}
+                  <div
+                    
+                    
+                    
                     className={`w-12 h-12 rounded-2xl mb-3 flex items-center justify-center transition-all duration-300 relative z-10 ${isCompleted
                       ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600'
                       } ${isCurrent ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900' : ''}`}
                   >
                     <Icon className="w-5 h-5" />
-                  </motion.div>
+                  </div>
                   <p className={`text-xs font-medium transition-colors duration-300 ${isCompleted ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-600'
                     }`}>
                     {step.label}
@@ -354,7 +353,7 @@ export default function OrderTrackingPage() {
               );
             })}
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -363,11 +362,11 @@ export default function OrderTrackingPage() {
             {/* Status Action Cards */}
             <AnimatePresence mode="wait">
               {orderData.status === 'payment_in_escrow' && (
-                <motion.div
+                <div
                   key="escrow"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+                  
+                  
+                  
                   className="p-6 rounded-3xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -400,21 +399,21 @@ export default function OrderTrackingPage() {
                       )}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {orderData.status === 'shipped' && (
-                <motion.div
+                <div
                   key="shipped"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  
+                  
                   className="p-6 rounded-3xl bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm relative overflow-hidden"
                 >
                   {/* Scanning Animation Effect */}
-                  <motion.div
+                  <div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent w-full h-full"
-                    animate={{ x: ['-100%', '100%'] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    
+                    
                   />
 
                   <div className="flex items-start gap-4 relative z-10">
@@ -442,14 +441,14 @@ export default function OrderTrackingPage() {
                       )}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {orderData.status === 'courier_verified' && (
-                <motion.div
+                <div
                   key="courier_verified"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  
+                  
                   className="p-6 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -467,14 +466,14 @@ export default function OrderTrackingPage() {
                       </Button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {orderData.status === 'inspection' && (
-                <motion.div
+                <div
                   key="inspection"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  
+                  
                   className="p-6 rounded-3xl bg-orange-500/10 border border-orange-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -501,14 +500,14 @@ export default function OrderTrackingPage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {orderData.status === 'completed' && (
-                <motion.div
+                <div
                   key="completed"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  
+                  
                   className="p-6 rounded-3xl bg-green-500/10 border border-green-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -525,14 +524,14 @@ export default function OrderTrackingPage() {
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {orderData.status === 'disputed' && (
-                <motion.div
+                <div
                   key="disputed"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  
+                  
                   className="p-6 rounded-3xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -552,7 +551,7 @@ export default function OrderTrackingPage() {
                       </Button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
 
@@ -561,9 +560,9 @@ export default function OrderTrackingPage() {
 
           {/* Sidebar: Order Details */}
           <div className="lg:col-span-1">
-            <motion.div
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+            <div
+              
+              
               className="p-6 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl sticky top-24 shadow-sm dark:shadow-none"
             >
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Order Details</h2>
@@ -613,7 +612,7 @@ export default function OrderTrackingPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </main>

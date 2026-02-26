@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -50,23 +49,23 @@ export default function LoginPage() {
         <Link href="/" className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 mb-8 transition-colors">
           ← Back to home
         </Link>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        <div
+          
+          
+          
         >
           <div className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 mx-auto lg:mx-0 shadow-lg">
             <span className="text-white font-bold text-xl">T</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Welcome back</h1>
           <p className="text-zinc-500">Enter your details to access your account.</p>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+      <div
+        
+        
+        
         className="space-y-6"
       >
         {error && (
@@ -157,7 +156,7 @@ export default function LoginPage() {
             Sign up for free
           </Link>
         </p>
-      </motion.div>
+      </div>
     </AuthLayout>
   );
 }

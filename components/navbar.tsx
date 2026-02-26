@@ -12,7 +12,6 @@ import {
   ChevronDown, User, LogOut, LayoutDashboard, Package, Truck, ShoppingBag, Sparkles
 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,9 +81,9 @@ export function Navbar() {
 
         <div className="relative z-10 flex items-center justify-between w-full max-w-[1920px] mx-auto">
           {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <div
+            
+            
             className="flex items-center gap-2 cursor-pointer group"
             onClick={() => router.push('/')}
           >
@@ -97,12 +96,12 @@ export function Navbar() {
               </span>
               <span className="text-[10px] text-zinc-500 tracking-widest uppercase">Premium B2B</span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Location (Mock) */}
           {user && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
+            <div
+              
               className="hidden xl:flex flex-col items-start leading-tight cursor-pointer hover:bg-zinc-100 dark:hover:bg-white/5 p-2 rounded-lg transition-colors min-w-[140px] ml-4 border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
             >
               <div className="flex items-center text-xs text-zinc-500 dark:text-zinc-400 ml-5">
@@ -112,7 +111,7 @@ export function Navbar() {
                 <MapPin className="w-4 h-4 mr-1 text-blue-500" />
                 <span>Ludhiana 141006</span>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Search Bar - Center */}
@@ -130,20 +129,20 @@ export function Navbar() {
               onBlur={() => setIsSearchFocused(false)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <motion.button
-              whileHover={{ backgroundColor: '#2563eb' }}
+            <button
+              
               className="bg-blue-600 w-14 flex items-center justify-center transition-colors h-full"
               onClick={handleSearch}
             >
               <Search className="w-5 h-5 text-white" />
-            </motion.button>
+            </button>
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-3 ml-auto">
             {/* Trust Score */}
             {user && (
-              <motion.div whileHover={{ y: -2 }} className="hidden lg:flex">
+              <div  className="hidden lg:flex">
                 <Badge className="bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 px-3 py-1.5 h-full rounded-lg gap-2 cursor-pointer shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                   <TrendingUp className="w-4 h-4" />
                   <div>
@@ -151,19 +150,19 @@ export function Navbar() {
                     <span className="text-sm font-bold">{user.trust_score || 95}</span>
                   </div>
                 </Badge>
-              </motion.div>
+              </div>
             )}
 
             {/* Theme Toggle */}
-            <motion.div whileHover={{ scale: 1.1 }} className="hidden sm:block">
+            <div  className="hidden sm:block">
               <ModeToggle />
-            </motion.div>
+            </div>
 
             {/* Account Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
+                <div
+                  
                   className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-zinc-100 dark:hover:bg-white/5 p-1.5 pr-3 rounded-full border border-transparent hover:border-zinc-200 dark:hover:border-white/10 transition-all"
                 >
                   <Avatar className="w-9 h-9 ring-2 ring-zinc-200 dark:ring-white/10">
@@ -175,7 +174,7 @@ export function Navbar() {
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Hello, {user?.name?.split(' ')[0]}</span>
                     <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center">Account <ChevronDown className="w-3 h-3 ml-1 text-zinc-400" /></span>
                   </div>
-                </motion.div>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 bg-white dark:bg-[#111] border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-zinc-200 backdrop-blur-xl">
                 <DropdownMenuLabel>Your Account</DropdownMenuLabel>
@@ -198,9 +197,9 @@ export function Navbar() {
 
             {/* Cart */}
             {!isWholesaler && (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <div
+                
+                
                 className="relative cursor-pointer p-2"
                 onClick={() => router.push('/cart')}
               >
@@ -210,7 +209,7 @@ export function Navbar() {
                     {cartCount}
                   </span>
                 )}
-              </motion.div>
+              </div>
             )}
           </div>
         </div>
@@ -218,34 +217,34 @@ export function Navbar() {
 
       {/* Bottom Bar - Categories & Quick Links */}
       <div className="relative bg-zinc-50 dark:bg-[#1a1a1a] text-zinc-600 dark:text-zinc-300 px-4 py-2 flex items-center text-sm gap-6 border-b border-zinc-200 dark:border-white/5 overflow-x-auto no-scrollbar shadow-inner">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
+        <div
+          
           className="flex items-center gap-2 font-bold cursor-pointer text-zinc-900 dark:text-white px-2 py-1 rounded-md hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors"
         >
           <Menu className="w-5 h-5" /> All
-        </motion.div>
+        </div>
 
         {quickLinks.map(link => (
-          <motion.div
+          <div
             key={link.path}
-            whileHover={{ y: -1, color: '#2563eb' }}
+            
             className="cursor-pointer font-medium whitespace-nowrap transition-colors hover:text-blue-600 dark:hover:text-blue-400"
             onClick={() => router.push(link.path)}
           >
             {link.label}
-          </motion.div>
+          </div>
         ))}
 
         <div className="h-4 w-px bg-zinc-300 dark:bg-white/10 mx-2 hidden md:block" />
 
         {['Fresh', "Today's Deals", 'Sell', 'Gift Cards', 'Tradigoo Pay', 'Buy Again', 'Browsing History'].map(txt => (
-          <motion.div
+          <div
             key={txt}
-            whileHover={{ scale: 1.02 }}
+            
             className="hidden lg:block cursor-pointer whitespace-nowrap hover:text-zinc-900 dark:hover:text-white transition-colors text-[13px]"
           >
             {txt}
-          </motion.div>
+          </div>
         ))}
 
         <div className="ml-auto hidden xl:flex items-center gap-2 font-bold text-blue-600 dark:text-blue-400 cursor-pointer hover:text-blue-500 dark:hover:text-blue-300 transition-colors px-2">

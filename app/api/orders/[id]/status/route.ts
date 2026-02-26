@@ -46,7 +46,7 @@ export async function PATCH(
         // 4. Validate State Transition
         if (!validateTransition(currentStatus as OrderStatus, newStatus as OrderStatus)) {
             return NextResponse.json({
-                error: `Invalid transition from ${currentStatus} to ${newStatus}`
+                error: `Invalid  from ${currentStatus} to ${newStatus}`
             }, { status: 400 });
         }
 
@@ -72,7 +72,7 @@ export async function PATCH(
         return NextResponse.json({ success: true, status: newStatus });
 
     } catch (error: any) {
-        console.error('State transition error:', error);
+        console.error('State  error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

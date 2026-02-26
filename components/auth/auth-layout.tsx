@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface AuthLayoutProps {
@@ -22,10 +21,10 @@ export function AuthLayout({ children, heroContent }: AuthLayoutProps) {
                 <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
 
                 {/* Hero Content */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
+                <div
+                    
+                    
+                    
                     className="relative z-10 max-w-lg"
                 >
                     {heroContent || (
@@ -55,7 +54,7 @@ export function AuthLayout({ children, heroContent }: AuthLayoutProps) {
                             </div>
                         </>
                     )}
-                </motion.div>
+                </div>
             </div>
 
             {/* Right Panel - Form Section */}

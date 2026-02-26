@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { ShieldCheck, Zap, Globe, Lock, BarChart3, Search } from 'lucide-react';
 import { SpotlightCard } from './spotlight-card';
 
@@ -10,14 +9,14 @@ export function FeaturesSection() {
         <section id="features" className="py-32 relative">
             <div className="container mx-auto px-6 max-w-7xl">
                 <div className="mb-24 text-center">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                    <h2
+                        
+                        
+                        
                         className="text-4xl md:text-6xl font-bold mb-8 tracking-tight"
                     >
                         Everything you need to <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">scale without limits.</span>
-                    </motion.h2>
+                    </h2>
                     <p className="text-white/50 text-xl max-w-2xl mx-auto font-light leading-relaxed">
                         We've replaced the fragmented, manual sourcing workflow with a single, intelligent operating system designed for modern brands.
                     </p>
@@ -62,13 +61,13 @@ export function FeaturesSection() {
                             color: "text-cyan-400"
                         }
                     ].map((feature, i) => (
-                        <motion.div
+                        <div
                             key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            whileHover={{ y: -8 }}
+                            
+                            
+                            
+                            
+                            
                             className="h-full"
                         >
                             <SpotlightCard className="rounded-3xl p-10 h-full">
@@ -80,7 +79,7 @@ export function FeaturesSection() {
                                     {feature.desc}
                                 </p>
                             </SpotlightCard>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>

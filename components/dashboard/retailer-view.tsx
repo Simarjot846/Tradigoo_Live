@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, Sparkles, TrendingUp, ShoppingCart, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 
@@ -24,9 +23,9 @@ export function RetailerView() {
             <div className="container mx-auto px-6 py-10 relative z-10">
                 {/* Hero Section */}
                 <div className="flex flex-col items-center text-center mb-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                    <div
+                        
+                        
                         className="max-w-3xl"
                     >
                         <div className="flex items-center justify-center gap-2 mb-6">
@@ -57,7 +56,7 @@ export function RetailerView() {
                                 </Button>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
 
                 {/* AI Recommendations Section */}
@@ -94,10 +93,10 @@ export function RetailerView() {
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {['Electronics', 'Fashion', 'Home & Kitchen', 'Beauty'].map((cat, i) => (
-                            <motion.div
+                            <div
                                 key={i}
-                                whileHover={{ y: -5 }}
-                                transition={{ type: "spring", stiffness: 300 }}
+                                
+                                
                             >
                                 <Card className="bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:border-white/10 cursor-pointer h-40 group relative overflow-hidden">
                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -108,7 +107,7 @@ export function RetailerView() {
                                         <span className="font-semibold text-zinc-300 group-hover:text-white transition-colors">{cat}</span>
                                     </CardContent>
                                 </Card>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </section>
@@ -119,11 +118,11 @@ export function RetailerView() {
 
 function ProductCard({ index }: { index: number }) {
     return (
-        <motion.div
+        <div
             className="inline-block w-[320px]"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
+            
+            
+            
         >
             <div className="group h-full flex flex-col rounded-3xl bg-zinc-900 border border-white/5 overflow-hidden hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all cursor-pointer relative">
 
@@ -165,6 +164,6 @@ function ProductCard({ index }: { index: number }) {
                     </Button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     )
 }

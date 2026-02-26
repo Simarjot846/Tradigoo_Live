@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
-import { motion } from 'framer-motion';
 
 export default function UpdatePasswordPage() {
     const [password, setPassword] = useState('');
@@ -56,22 +55,22 @@ export default function UpdatePasswordPage() {
                 </p>
             </>
         }>
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+            <div
+                
+                
+                
             >
                 <div className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 shadow-lg">
                     <span className="text-white font-bold text-xl">#</span>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Set New Password</h1>
                 <p className="text-zinc-500 mb-8">Enter your new password below.</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+            <div
+                
+                
+                
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
@@ -114,7 +113,7 @@ export default function UpdatePasswordPage() {
                         {loading ? 'Updating Password...' : 'Update Password'}
                     </Button>
                 </form>
-            </motion.div>
+            </div>
         </AuthLayout>
     );
 }

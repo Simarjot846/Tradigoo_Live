@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Search, ShoppingCart, Truck, CheckCircle } from "lucide-react";
 
 const steps = [
@@ -43,12 +42,12 @@ export function Process() {
 
                     <div className="grid md:grid-cols-4 gap-8">
                         {steps.map((step, index) => (
-                            <motion.div
+                            <div
                                 key={index}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.2 }}
-                                viewport={{ once: true }}
+                                
+                                
+                                
+                                
                                 className="relative z-10"
                             >
                                 <div className="flex flex-col items-center text-center">
@@ -61,7 +60,7 @@ export function Process() {
                                         {step.description}
                                     </p>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </div>

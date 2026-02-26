@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
 import { UserRole } from '@/lib/supabase';
-import { motion } from 'framer-motion';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -75,20 +74,20 @@ export default function SignupPage() {
         <Link href="/" className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 mb-6 transition-colors">
           ← Back to home
         </Link>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        <div
+          
+          
+          
         >
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Create an account</h1>
           <p className="text-zinc-500">Choose your role to get started.</p>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+      <div
+        
+        
+        
         className="space-y-6"
       >
         {error && (
@@ -252,7 +251,7 @@ export default function SignupPage() {
             Log in
           </Link>
         </p>
-      </motion.div>
+      </div>
     </AuthLayout>
   );
 }

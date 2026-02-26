@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,40 +56,40 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-7xl relative z-10 flex flex-col lg:flex-row items-center gap-16 lg:gap-24 text-center lg:text-left">
 
           <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+            <div
+              
+              
+              
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-md mb-10 mx-auto lg:mx-0 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
             >
               <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 border-0 px-3">New V2.0</Badge>
               <span className="text-sm text-blue-600 dark:text-blue-100 font-medium">The intelligent sourcing OS</span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+            <h1
+              
+              
+              
               className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 leading-[1.1]"
             >
               <span className="block text-gray-900 dark:text-white drop-shadow-sm dark:drop-shadow-2xl">Sourcing</span>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-400 dark:via-purple-300 dark:to-blue-400 animate-gradient pb-4">Reimagined.</span>
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+            <p
+              
+              
+              
               className="text-xl md:text-2xl text-muted-foreground dark:text-blue-100/60 max-w-2xl mx-auto lg:mx-0 mb-14 leading-relaxed font-light"
             >
               The first AI-powered platform that connects you directly with verified manufacturers. <span className="text-foreground dark:text-white/90 font-normal">No middlemen. Zero risk.</span>
-            </motion.p>
+            </p>
 
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+            <div
+              
+              
+              
               className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6"
             >
               <Button asChild size="lg" className="h-16 px-10 rounded-full text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/40 w-full sm:w-auto group transition-all hover:scale-105">
@@ -104,12 +103,12 @@ export default function LandingPage() {
                   Watch Demo
                 </Link>
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 1 }}
+            <div
+              
+              
+              
               className="mt-12 flex items-center justify-center lg:justify-start gap-4 text-sm text-white/40"
             >
               <div className="flex -space-x-2">
@@ -120,14 +119,14 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-zinc-600 dark:text-white/40">Trusted by 2,000+ modern teams</p>
-            </motion.div>
+            </div>
           </div>
 
           {/* Floating Interactive Card */}
           <div className="flex-1 hidden lg:block relative h-[600px] w-full max-w-[600px] perspective-1000">
-            <motion.div
-              animate={{ y: [-15, 15, -15] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            <div
+              
+              
               className="absolute top-20 right-10 z-20 w-96 transform hover:rotate-y-12 hover:rotate-x-12 transition-transform duration-500 preserve-3d"
             >
               <div className="relative p-8 rounded-[2rem] bg-white dark:bg-black/60 border border-zinc-200 dark:border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden group">
@@ -158,10 +157,10 @@ export default function LandingPage() {
                     </div>
 
                     <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "98.5%" }}
-                        transition={{ delay: 1, duration: 1.5, ease: "circOut" }}
+                      <div
+                        
+                        
+                        
                         className="h-full bg-gradient-to-r from-green-500 to-emerald-400 shadow-[0_0_20px_rgba(34,197,94,0.5)]"
                       />
                     </div>
@@ -179,12 +178,12 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Background Elements */}
-            <motion.div
-              animate={{ y: [10, -20, 10], rotate: [-2, 4, -2] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            <div
+              
+              
               className="absolute top-64 left-0 z-10"
             >
               <div className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 backdrop-blur-lg shadow-xl w-56 rotate-[-6deg]">
@@ -198,7 +197,7 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Glow Behind */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-[100px] rounded-full -z-10" />
@@ -214,16 +213,16 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-16 md:gap-32 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
             {/* Styled Text Logos for consistency */}
             {['Acme Corp', 'GlobalTrade', 'LogistiX', 'SecurePay', 'Source.ai'].map((brand, i) => (
-              <motion.div
+              <div
                 key={brand}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                
+                
+                
+                
                 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight hover:text-zinc-600 dark:hover:text-white transition-colors cursor-default"
               >
                 {brand}
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

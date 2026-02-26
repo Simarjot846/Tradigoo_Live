@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, ShieldAlert, CheckCircle, Scale, MapPin, Package, Camera, User, FileText, ArrowLeft, Bot, Truck } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase-client';
 import { checkFraudRisk, FraudCheckResult } from '@/lib/fraud-detection';
 import { toast } from 'sonner';

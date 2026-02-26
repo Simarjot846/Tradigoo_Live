@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Search, Filter, ChevronRight, Truck, CheckCircle, AlertCircle, Package, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -70,13 +69,13 @@ export default function OrdersReceivedPage() {
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" /> Back
                         </Button>
-                        <motion.h1
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
+                        <h1
+                            
+                            
                             className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight"
                         >
                             Orders Received
-                        </motion.h1>
+                        </h1>
                         <p className="text-zinc-500 dark:text-zinc-400 mt-2">Manage incoming orders and track shipment status.</p>
                     </div>
                 </div>
@@ -124,10 +123,10 @@ function OrderCard({ order, index, onUpdate }: { order: any, index: number, onUp
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+        <div
+            
+            
+            
         >
             <Card className="bg-white dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 backdrop-blur-md p-6 hover:border-zinc-300 dark:hover:border-white/10 transition-colors group shadow-sm dark:shadow-none">
                 <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
@@ -159,7 +158,7 @@ function OrderCard({ order, index, onUpdate }: { order: any, index: number, onUp
                     </div>
                 </div>
             </Card>
-        </motion.div>
+        </div>
     )
 }
 
