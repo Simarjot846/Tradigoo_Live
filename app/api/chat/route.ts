@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     try {
         const { message, history } = await req.json();
 
-        // Gemini requires history to start with a 'user' role.
+
         let validHistory = history || [];
         if (validHistory.length > 0 && (validHistory[0].role === 'model' || validHistory[0].role === 'assistant')) {
             validHistory = validHistory.slice(1);
@@ -21,17 +21,17 @@ export async function POST(req: Request) {
             });
         }
 
-        // 1. RAG Retrieval - Get relevant documents
+
         const retrievedDocs = await retrieveDocuments(message, 3);
         const context = formatContext(retrievedDocs);
 
-        // 2. Construct Grounded System Prompt
+
         const systemPrompt = `You are an AI assistant for Tradigoo. Only answer using the provided context. If the answer is not in context, say 'Information not available in records.'
 
 Context:
 ${context}`;
 
-        // Initialize Gemini
+
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
@@ -42,12 +42,10 @@ ${context}`;
             },
         });
 
-        // 3. Send enriched prompt
+
         const fullMessage = `User: ${message}`;
 
-        // We use the system prompt as the first message or instruction
-        // For Gemini 1.5+, instruction is better set via systemInstruction in getGenerativeModel
-        // But to keep it simple and consistent with existing structure:
+
         const enrichedPrompt = `${systemPrompt}\n\n${fullMessage}`;
 
         const result = await chat.sendMessage(enrichedPrompt);
