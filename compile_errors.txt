@@ -1,6 +1,0 @@
-components/dashboard/seller-dashboard.tsx(93,18): error TS7006: Parameter 'payload' implicitly has an 'any' type.
-components/dashboard/seller-dashboard.tsx(119,22): error TS7031: Binding element 'data' implicitly has an 'any' type.
-lib/auth-context.tsx(97,48): error TS7031: Binding element 'session' implicitly has an 'any' type.
-lib/auth-context.tsx(112,14): error TS7006: Parameter 'err' implicitly has an 'any' type.
-lib/auth-context.tsx(126,14): error TS7006: Parameter 'event' implicitly has an 'any' type.
-lib/auth-context.tsx(126,21): error TS7006: Parameter 'session' implicitly has an 'any' type.

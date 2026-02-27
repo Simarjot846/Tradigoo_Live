@@ -40,5 +40,37 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Python
 pathway-backend/venv/
 pathway-backend/__pycache__/
+pathway-backend/*.pyc
+*.py[cod]
+*$py.class
+__pycache__/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.sql~
+compile_errors.txt
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nested git repositories
+Tradigoo_Live/
+
+# Build artifacts
+dist/
+build/
