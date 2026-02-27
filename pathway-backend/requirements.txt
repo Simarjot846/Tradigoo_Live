@@ -1,0 +1,7 @@
+pathway
+fastapi
+uvicorn
+python-dotenv
+google-generativeai
+
+requests

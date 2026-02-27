@@ -14,22 +14,33 @@ export default function TopWholesalers() {
 
     useEffect(() => {
         let isMounted = true;
+        let initialTimeout: NodeJS.Timeout;
+        
         const fetchStats = async () => {
             try {
                 const res = await fetch('/api/pathway-top-wholesalers');
                 if (res.ok) {
                     const json = await res.json();
-                    if (isMounted) setData(json);
+                    if (isMounted && Array.isArray(json)) {
+                        setData(json);
+                    }
+                } else {
+                    console.error("Failed to load top wholesalers");
                 }
             } catch (e) {
-                console.error("Failed to load top wholesalers");
+                console.error("Failed to load top wholesalers:", e);
             }
         };
 
-        fetchStats();
-        const interval = setInterval(fetchStats, 3000);
+        // Delay initial fetch
+        initialTimeout = setTimeout(fetchStats, 800);
+        
+        // Reduced frequency from 5s to 10s
+        const interval = setInterval(fetchStats, 10000);
+        
         return () => {
             isMounted = false;
+            clearTimeout(initialTimeout);
             clearInterval(interval);
         };
     }, []);

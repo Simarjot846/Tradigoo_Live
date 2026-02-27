@@ -19,6 +19,7 @@ import GreenScoreMeter from "@/components/shared/GreenScoreMeter";
 import LiveDemandCard from "@/components/dashboard/LiveDemandCard";
 import TopWholesalers from "@/components/dashboard/TopWholesalers";
 import SeasonalTrends from "@/components/dashboard/SeasonalTrends";
+import WeatherInsightsWidget from "@/components/dashboard/WeatherInsightsWidget";
 
 // Helper for emojis
 function getCategoryEmoji(category: string): string {
@@ -148,6 +149,11 @@ export function BuyerDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
                     <TopWholesalers />
                     <SeasonalTrends />
+                </div>
+
+                {/* Live Weather Intelligence with Product Predictions & Festivals */}
+                <div className="mb-12">
+                    <WeatherInsightsWidget />
                 </div>
 
                 {/* AI Recommendations Section */}

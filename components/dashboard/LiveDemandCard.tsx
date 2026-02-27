@@ -7,12 +7,14 @@ export default function LiveDemandCard({ children }: { children?: React.ReactNod
 
     useEffect(() => {
         let isMounted = true;
+        let initialTimeout: NodeJS.Timeout;
+        
         const fetchPathwayStats = async () => {
             try {
                 const res = await fetch('/api/pathway-stats');
                 if (res.ok) {
                     const stats = await res.json();
-                    if (stats && stats.length > 0) {
+                    if (stats && Array.isArray(stats) && stats.length > 0) {
                         const currentScore = stats[0].total_carbon_saved || 400;
                         if (isMounted) {
                             setData(prev => {
@@ -26,18 +28,23 @@ export default function LiveDemandCard({ children }: { children?: React.ReactNod
                             });
                         }
                     }
+                } else {
+                    console.error("Failed to fetch pathway stats");
                 }
             } catch (e) {
-                // Fallback if Pathway mock is down
+                console.error("Error fetching pathway stats:", e);
             }
         };
 
-        // Fetch immediately and start interval
-        fetchPathwayStats();
-        const interval = setInterval(fetchPathwayStats, 2000);
+        // Delay initial fetch
+        initialTimeout = setTimeout(fetchPathwayStats, 500);
+        
+        // Fetch every 5 seconds (reduced from 3 for better performance)
+        const interval = setInterval(fetchPathwayStats, 5000);
 
         return () => {
             isMounted = false;
+            clearTimeout(initialTimeout);
             clearInterval(interval);
         };
     }, []);

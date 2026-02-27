@@ -15,6 +15,8 @@ export default function SeasonalTrends() {
 
     useEffect(() => {
         let isMounted = true;
+        let initialTimeout: NodeJS.Timeout;
+        
         const fetchStats = async () => {
             try {
                 const res = await fetch('/api/pathway-seasonal');
@@ -27,10 +29,15 @@ export default function SeasonalTrends() {
             }
         };
 
-        fetchStats();
-        const interval = setInterval(fetchStats, 3000);
+        // Delay initial fetch
+        initialTimeout = setTimeout(fetchStats, 1200);
+        
+        // Reduced frequency from 3s to 10s
+        const interval = setInterval(fetchStats, 10000);
+        
         return () => {
             isMounted = false;
+            clearTimeout(initialTimeout);
             clearInterval(interval);
         };
     }, []);

@@ -8,10 +8,9 @@ import CryptoJS from "crypto-js";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
-import SearchFrequency from "@/components/dashboard/SearchFrequency";
 import QRCode from "qrcode";
 import {
     Dialog,
@@ -32,6 +31,24 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+
+// Lazy load heavy components for better performance
+const LiveSearchTrends = lazy(() => import("@/components/dashboard/LiveSearchTrends"));
+const SearchFrequency = lazy(() => import("@/components/dashboard/SearchFrequency"));
+
+// Loading skeleton for lazy components
+function ComponentSkeleton() {
+    return (
+        <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-lg animate-pulse">
+            <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-64 mb-4"></div>
+            <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export function SellerDashboard() {
     const { user } = useAuth();
@@ -260,8 +277,18 @@ export function SellerDashboard() {
                 </div>
             </div>
 
+            {/* Live Search Trends - Pathway Real-Time (Lazy Loaded) */}
             <div className="w-full mb-10 mt-6">
-                <SearchFrequency />
+                <Suspense fallback={<ComponentSkeleton />}>
+                    <LiveSearchTrends />
+                </Suspense>
+            </div>
+
+            {/* Search Frequency (Lazy Loaded) */}
+            <div className="w-full mb-10 mt-6">
+                <Suspense fallback={<ComponentSkeleton />}>
+                    <SearchFrequency />
+                </Suspense>
             </div>
 
             {/* Main Content Grid */}

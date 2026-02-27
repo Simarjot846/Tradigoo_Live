@@ -14,6 +14,8 @@ export default function SearchFrequency() {
 
     useEffect(() => {
         let isMounted = true;
+        let initialTimeout: NodeJS.Timeout;
+        
         const fetchStats = async () => {
             try {
                 const res = await fetch('/api/pathway-search-trends');
@@ -26,10 +28,15 @@ export default function SearchFrequency() {
             }
         };
 
-        fetchStats();
-        const interval = setInterval(fetchStats, 3000);
+        // Delay initial fetch
+        initialTimeout = setTimeout(fetchStats, 1000);
+        
+        // Reduced frequency from 3s to 10s
+        const interval = setInterval(fetchStats, 10000);
+        
         return () => {
             isMounted = false;
+            clearTimeout(initialTimeout);
             clearInterval(interval);
         };
     }, []);
@@ -48,7 +55,7 @@ export default function SearchFrequency() {
             </p>
 
             <div className="space-y-4">
-                {trends.map((item, idx) => (
+                {trends.slice(0, 4).map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-purple-50 dark:bg-zinc-950 border border-purple-100 dark:border-purple-900/30 group hover:border-purple-500/50 transition-colors">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
