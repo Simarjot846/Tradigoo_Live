@@ -27,47 +27,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', authUser.id)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
 
-    if (error) {
-      // Ignore 'Row not found' (PGRST116) as it might happen during  signup before trigger
-      if (error.code === 'PGRST116') {
-        console.warn('Profile missing (PGRST116). Auto-creating profile for:', authUser.id);
+      if (error) {
+        // Ignore 'Row not found' (PGRST116) as it might happen during  signup before trigger
+        if (error.code === 'PGRST116') {
+          console.warn('Profile missing (PGRST116). Auto-creating profile for:', authUser.id);
 
-        const newProfile = {
-          id: authUser.id,
-          email: authUser.email || 'user@example.com',
-          role: 'retailer', // Default role
-          name: authUser.email?.split('@')[0] || 'Trader',
-          business_name: 'New Trader Business',
-          location: 'Delhi, India',
-          trust_score: 100,
-          total_orders: 0
-        };
+          const newProfile = {
+            id: authUser.id,
+            email: authUser.email || 'user@example.com',
+            role: 'retailer', // Default role
+            name: authUser.email?.split('@')[0] || 'Trader',
+            business_name: 'New Trader Business',
+            location: 'Delhi, India',
+            trust_score: 100,
+            total_orders: 0
+          };
 
-        // Insert the missing profile
-        const { data: createdProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert(newProfile as any) // Type cast to avoid strict shape issues during quick fix
-          .select()
-          .single();
+          // Insert the missing profile
+          const { data: createdProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert(newProfile as any) // Type cast to avoid strict shape issues during quick fix
+            .select()
+            .single();
 
-        if (createError) {
-          console.error('Failed to auto-create profile:', createError);
-          return null;
+          if (createError) {
+            console.error('Failed to auto-create profile:', createError);
+            return null;
+          }
+
+          return createdProfile;
         }
-
-        return createdProfile;
+        console.error('Error fetching profile:', JSON.stringify(error, null, 2));
+        return null;
       }
-      console.error('Error fetching profile:', JSON.stringify(error, null, 2));
+
+      return profile;
+    } catch (err: any) {
+      // Handle abort errors gracefully
+      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+        console.debug('[Auth] Profile fetch aborted (benign)');
+        return null;
+      }
+      console.error('Error in fetchUserProfile:', err);
       return null;
     }
-
-    return profile;
   };
 
   const refreshUser = async () => {
@@ -83,19 +93,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    const abortController = new AbortController();
 
-    // Safety timeout - reduced to 5s as getUser should be fast
+    // Safety timeout - reduced to 10s to give more time
     const timer = setTimeout(() => {
       if (mounted) {
         setLoading((currentLoading) => {
           if (currentLoading) {
-            // If still loading after 5s, assume public.
+            // If still loading after 10s, assume public.
+            console.warn('Auth initialization timeout - assuming public access');
             return false;
           }
           return currentLoading;
         });
       }
-    }, 5000);
+    }, 10000);
 
     const initializeAuth = async () => {
       try {
@@ -103,20 +115,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // getUser is more secure and reliable than getSession for auth status
         const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
-
-
-        if (!mounted) return;
+        if (!mounted || abortController.signal.aborted) return;
 
         if (error) {
           // If error (e.g. no session), just finish loading
+          console.log('No active session');
           setLoading(false);
           return;
         }
 
         if (authUser) {
-          await fetchUserProfile(authUser).then(profile => {
-            if (mounted && profile) setUser(profile);
-          });
+          const profile = await fetchUserProfile(authUser);
+          if (mounted && !abortController.signal.aborted && profile) {
+            setUser(profile);
+          }
         }
       } catch (err: any) {
         // Ignore AbortError as it usually happens during hot reloads or strict mode cleanup
@@ -181,6 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      abortController.abort();
       subscription.unsubscribe();
       clearTimeout(timer);
     };

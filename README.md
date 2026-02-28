@@ -15,12 +15,11 @@
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
+- [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
 - [Pathway Integration](#-pathway-real-time-integration)
-- [Demo Guide](#-demo-guide)
-- [API Documentation](#-api-documentation)
-- [Deployment](#-deployment)
+- [Documentation](#-documentation)
+- [Testing](#-testing)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -172,6 +171,48 @@ Trust Score = Base(500)
 │  • Razorpay          │
 └──────────────────────┘
 ```
+
+---
+
+## 📁 Project Structure
+
+```
+Tradigoo_Live/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   ├── dashboard/            # Dashboard pages
+│   ├── marketplace/          # Product marketplace
+│   └── auth/                 # Authentication pages
+│
+├── components/               # React components
+│   ├── dashboard/            # Dashboard components
+│   ├── ui/                   # shadcn/ui components
+│   └── shared/               # Shared components
+│
+├── lib/                      # Utilities & helpers
+│   ├── api/                  # API client
+│   ├── hooks/                # Custom React hooks
+│   ├── utils/                # Utility functions
+│   └── constants.ts          # App constants
+│
+├── types/                    # TypeScript types
+│   ├── dashboard.ts          # Dashboard types
+│   ├── products.ts           # Product types
+│   ├── orders.ts             # Order types
+│   └── users.ts              # User types
+│
+├── pathway-backend/          # Pathway streaming backend
+│   ├── pathway_realtime.py   # Main pipeline
+│   └── requirements.txt      # Python deps
+│
+└── docs/                     # Documentation
+    ├── setup/                # Setup guides
+    ├── features/             # Feature docs
+    ├── architecture/         # Architecture docs
+    └── troubleshooting/      # Troubleshooting
+```
+
+For detailed architecture, see [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
