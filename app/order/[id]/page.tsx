@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ArrowLeft, CheckCircle, Clock, Package, Truck, ShieldCheck, AlertTriangle, Upload, ChevronRight, Copy } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 
 import dynamic from 'next/dynamic';
 // Dynamically import VideoRecorder to reduce bundle size
