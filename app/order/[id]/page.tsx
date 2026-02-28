@@ -118,6 +118,7 @@ export default function OrderTrackingPage() {
   const progress = ((currentStepIndex + 1) / statusSteps.length) * 100;
 
   const handleReadyForPickup = async () => {
+    console.log('[Demo] handleReadyForPickup called');
     const supabase = createClient();
     // 1. Set status to 'shipped' (which we treat as Ready for Pickup logic)
     const { error } = await supabase
@@ -145,10 +146,14 @@ export default function OrderTrackingPage() {
           toast.success("Courier Verified! Order picked up.");
         }
       }, 5000);
+    } else {
+      console.error('[Demo] Error updating order:', error);
+      toast.error("Failed to simulate pickup: " + error.message);
     }
   };
 
   const handleForceCourierVerify = async () => {
+    console.log('[Demo] handleForceCourierVerify called');
     // 1. Optimistic Update (Instant feedback)
     setOrderData((prev: any) => ({ ...prev, status: 'courier_verified' }));
 
@@ -171,6 +176,7 @@ export default function OrderTrackingPage() {
   };
 
   const handleSimulateDelivered = async () => {
+    console.log('[Demo] handleSimulateDelivered called');
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const supabase = createClient();
     const { error } = await supabase
@@ -181,6 +187,10 @@ export default function OrderTrackingPage() {
     if (!error) {
       await fetchOrder();
       setShowOtpDialog(true);
+      toast.success("Order marked as delivered!");
+    } else {
+      console.error('[Demo] Error simulating delivery:', error);
+      toast.error("Failed to simulate delivery: " + error.message);
     }
   };
 
