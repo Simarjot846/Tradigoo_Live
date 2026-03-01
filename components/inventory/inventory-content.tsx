@@ -45,14 +45,25 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this product?")) return;
 
-        const supabase = createClient();
-        const { error } = await supabase.from('products').delete().eq('id', id);
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+            });
 
-        if (!error) {
-            toast.success("Product deleted");
-            setProducts(prev => prev.filter(p => p.id !== id));
-        } else {
-            toast.error("Failed to delete");
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success("Product deleted successfully");
+                setProducts(prev => prev.filter(p => p.id !== id));
+            } else {
+                toast.error(data.error || "Failed to delete product");
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error("Failed to delete product");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -166,7 +177,7 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                                         <TableCell className="text-zinc-600 dark:text-zinc-400 capitalize">{product.category || 'General'}</TableCell>
                                         <TableCell>
                                             <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 hover:bg-emerald-500/20">
-                                                In Stock ({Math.floor(Math.random() * 200) + 50})
+                                                In Stock
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-zinc-900 dark:text-white font-mono">₹{product.base_price?.toFixed(2)}</TableCell>

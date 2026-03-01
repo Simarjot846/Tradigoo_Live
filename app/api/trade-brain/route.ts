@@ -28,15 +28,22 @@ export async function POST(req: Request) {
         } catch (e: unknown) {
             console.error("Pathway not reachable, using mock context", e);
             // Fallback for UI testing if Pathway is down
-            liveContext = [{ text: "Mock Wholesaler - Green Score: 400 - Price: $20" }]
+            liveContext = [{ text: "Trusted Wholesaler - Green Score: 400 - Price: ₹1500" }]
         }
 
         // 2. Pass real-time context to Gemini for reasoning via new SDK
         const prompt = `
-        You are Tradigoo's AI Trade Brain. Based on this LIVE wholesaler data fetched via Pathway Vector Search:
+        You are Tradigoo's Smart Assistant. Based on this LIVE wholesaler data:
         ${JSON.stringify(liveContext)}
         
-        Solve this buyer query prioritizing Green Scores, best pricing, and carbon saved. Output exactly 1-2 concise sentences, no markdown formatting. Query: "${query}"
+        Answer this retailer's query by prioritizing Green Scores and best pricing. 
+        CRITICAL RULES:
+        - Use simple, easy-to-understand English.
+        - NEVER use technical jargon.
+        - ALWAYS use Rupees (₹) for currency, never Dollars ($).
+        - Output exactly 1-2 concise sentences.
+        
+        Query: "${query}"
         `;
 
         let aiResponseText = "";

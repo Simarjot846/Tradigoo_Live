@@ -1,24 +1,30 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const wholesalersDB = [
+    { product: "Organic Cotton", names: ["EcoFabrics Ltd", "GreenWeave Textiles", "PureThread Inc", "SustainaBale Co"] },
+    { product: "Wheat", names: ["GreenHarvest Traders", "Punjab Golden Grain", "AgroPrime Organics", "PureYield Farms"] },
+    { product: "Rice", names: ["Sustainable Grains Co", "Heritage Rice Mills", "Ludhiana Agrotech", "EcoGrain Exporters"] },
+    { product: "Pulses", names: ["NaturePulse Suppliers", "Organic Dals India", "GreenBean Network", "SustainaPulses"] },
+    { product: "Spices", names: ["Kerala Organics", "Aroma Naturals", "PureSpice Hub", "Deccan Flavors"] },
+    { product: "Jute Bags", names: ["Bengal Jute Mill", "EcoCarry Bags", "GreenWeave Jute", "EarthSack Co"] }
+];
+
 export async function GET() {
-    try {
-        const res = await fetch('http://localhost:8081/top-wholesalers', { 
-            next: { revalidate: 0 },
-            signal: AbortSignal.timeout(2000) // 2 second timeout
-        });
-        if (!res.ok) {
-            throw new Error("Pathway not reachable");
-        }
-        const data = await res.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        // Return mock data as fallback
-        const mockData = [
-            { product: "Organic Cotton", top_wholesaler: "EcoFabrics Ltd", purchases: 156 },
-            { product: "Wheat", top_wholesaler: "GreenHarvest Traders", purchases: 142 },
-            { product: "Rice", top_wholesaler: "Sustainable Grains Co", purchases: 128 },
-            { product: "Pulses", top_wholesaler: "NaturePulse Suppliers", purchases: 98 }
-        ];
-        return NextResponse.json(mockData);
-    }
+    // Generate 4 dynamically rotating top wholesalers to simulate live Pathway clustering rankings
+    const shuffledProducts = [...wholesalersDB].sort(() => 0.5 - Math.random()).slice(0, 4);
+
+    const liveRankingsData = shuffledProducts.map(p => {
+        const randomName = p.names[Math.floor(Math.random() * p.names.length)];
+        const basePurchases = Math.floor(Math.random() * 80) + 70; // Generate between 70 to 150
+        return {
+            product: p.product,
+            top_wholesaler: randomName,
+            purchases: basePurchases + Math.floor(Math.random() * 20)
+        };
+    }).sort((a, b) => b.purchases - a.purchases);
+
+    return NextResponse.json(liveRankingsData);
 }

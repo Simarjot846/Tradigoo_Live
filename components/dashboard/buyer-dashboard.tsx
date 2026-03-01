@@ -106,7 +106,7 @@ export function BuyerDashboard() {
                             Welcome, <span className="text-emerald-600 dark:text-emerald-500">{user?.name}</span>
                         </h1>
                         <p className="text-zinc-500 dark:text-zinc-400 text-lg">
-                            Source sustainably with Pathway Real-Time intelligence.
+                            Discover the best sustainable products from trusted wholesalers.
                         </p>
                     </div>
                     {/* Live Green Score Component Added Here */}
@@ -119,11 +119,11 @@ export function BuyerDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
                     <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/20 shadow-lg animate-fade-in">
                         <h2 className="text-xl font-bold dark:text-white flex items-center gap-2 mb-4">
-                            <Sparkles className="w-6 h-6 text-emerald-500" /> Pathway Smart Matching Engine
+                            <Sparkles className="w-6 h-6 text-emerald-500" /> Smart Assistant
                         </h2>
                         <div className="flex gap-2 mb-4">
                             <Input
-                                placeholder="E.g. Find organic cotton near Punjab with highest green score..."
+                                placeholder="E.g. Find organic cotton near Punjab with the best quality..."
                                 className="bg-zinc-100 dark:bg-zinc-950 border-emerald-500/30"
                                 value={aiQuery}
                                 onChange={(e) => setAiQuery(e.target.value)}
@@ -135,7 +135,7 @@ export function BuyerDashboard() {
                         </div>
                         {aiResponse && (
                             <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-800 dark:text-emerald-200 text-sm animate-fade-in">
-                                <strong>Agentic Recommendation (Vector RAG):</strong> {aiResponse}
+                                <strong>Suggestion:</strong> {aiResponse}
                             </div>
                         )}
                     </div>
@@ -165,7 +165,7 @@ export function BuyerDashboard() {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Sustainable Picks For You</h2>
-                                <p className="text-sm text-zinc-500">Live Pathway Index Recommendations</p>
+                                <p className="text-sm text-zinc-500">Curated recommendations just for you</p>
                             </div>
                         </div>
                         <div className="flex gap-3">

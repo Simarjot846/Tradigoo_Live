@@ -29,7 +29,7 @@ type OrderStatus = 'payment_in_escrow' | 'shipped' | 'courier_verified' | 'deliv
 import { createClient } from '@/lib/supabase-client';
 
 export default function OrderTrackingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const router = useRouter();
   const params = useParams();
   const [orderData, setOrderData] = useState<any>(null);
@@ -224,7 +224,30 @@ export default function OrderTrackingPage() {
       .update({ status: 'completed' })
       .eq('id', orderData.id);
 
-    if (!error) fetchOrder();
+    if (!error) {
+      if (user) {
+        // Increase trust score of current user by 50
+        const newScore = Math.min((user.trust_score || 95) + 50, 1000);
+        await supabase
+          .from('profiles')
+          .update({ trust_score: newScore })
+          .eq('id', user.id);
+
+        // Increase trust score of the other party
+        const otherPartyId = user.id === orderData.buyer_id ? orderData.seller_id : orderData.buyer_id;
+        if (otherPartyId) {
+          const { data: otherProfile } = await supabase.from('profiles').select('trust_score').eq('id', otherPartyId).single();
+          if (otherProfile) {
+            const newOtherScore = Math.min((otherProfile.trust_score || 95) + 50, 1000);
+            await supabase.from('profiles').update({ trust_score: newOtherScore }).eq('id', otherPartyId);
+          }
+        }
+
+        await refreshUser();
+        toast.success("Order Completed! Trust Score increased by +50.");
+      }
+      fetchOrder();
+    }
   };
 
   const handleRaiseDispute = async () => {
@@ -295,8 +318,8 @@ export default function OrderTrackingPage() {
 
       <main className="container mx-auto px-6 py-10 relative z-10 max-w-5xl">
         <div
-          
-          
+
+
           className="mb-8"
         >
           <Button
@@ -326,9 +349,9 @@ export default function OrderTrackingPage() {
 
         {/* Progress Bar */}
         <div
-          
-          
-          
+
+
+
           className="p-8 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl mb-8 relative overflow-hidden shadow-sm dark:shadow-none"
         >
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
@@ -346,9 +369,9 @@ export default function OrderTrackingPage() {
               return (
                 <div key={step.status} className="flex flex-col items-center text-center relative">
                   <div
-                    
-                    
-                    
+
+
+
                     className={`w-12 h-12 rounded-2xl mb-3 flex items-center justify-center transition-all duration-300 relative z-10 ${isCompleted
                       ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600'
@@ -375,9 +398,9 @@ export default function OrderTrackingPage() {
               {orderData.status === 'payment_in_escrow' && (
                 <div
                   key="escrow"
-                  
-                  
-                  
+
+
+
                   className="p-6 rounded-3xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -416,15 +439,15 @@ export default function OrderTrackingPage() {
               {orderData.status === 'shipped' && (
                 <div
                   key="shipped"
-                  
-                  
+
+
                   className="p-6 rounded-3xl bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm relative overflow-hidden"
                 >
                   {/* Scanning Animation Effect */}
                   <div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent w-full h-full"
-                    
-                    
+
+
                   />
 
                   <div className="flex items-start gap-4 relative z-10">
@@ -458,8 +481,8 @@ export default function OrderTrackingPage() {
               {orderData.status === 'courier_verified' && (
                 <div
                   key="courier_verified"
-                  
-                  
+
+
                   className="p-6 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -483,8 +506,8 @@ export default function OrderTrackingPage() {
               {orderData.status === 'inspection' && (
                 <div
                   key="inspection"
-                  
-                  
+
+
                   className="p-6 rounded-3xl bg-orange-500/10 border border-orange-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -517,8 +540,8 @@ export default function OrderTrackingPage() {
               {orderData.status === 'completed' && (
                 <div
                   key="completed"
-                  
-                  
+
+
                   className="p-6 rounded-3xl bg-green-500/10 border border-green-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -541,8 +564,8 @@ export default function OrderTrackingPage() {
               {orderData.status === 'disputed' && (
                 <div
                   key="disputed"
-                  
-                  
+
+
                   className="p-6 rounded-3xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -572,8 +595,8 @@ export default function OrderTrackingPage() {
           {/* Sidebar: Order Details */}
           <div className="lg:col-span-1">
             <div
-              
-              
+
+
               className="p-6 rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl sticky top-24 shadow-sm dark:shadow-none"
             >
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Order Details</h2>

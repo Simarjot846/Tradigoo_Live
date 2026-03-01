@@ -10,6 +10,7 @@ import { Navbar } from "@/components/navbar";
 import { ThemePersistence } from "@/components/theme-persistence";
 import { CartProvider } from "@/lib/cart-context";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ErrorSuppression } from "./error-suppression";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
+              <ErrorSuppression />
               <CartProvider>
                 <RoleThemeProvider>
                   <Suspense fallback={<div className="h-[72px] w-full bg-white dark:bg-[#0a0a0a]" />}>

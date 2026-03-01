@@ -45,28 +45,42 @@ export default function DisputeResolutionPage() {
     const handleConfirmResolution = async () => {
         const supabase = createClient();
 
-        // 1. Resolve Dispute (This might trigger the DB auto-update logic)
+        // 1. Resolve Dispute
         const { error: matchError } = await supabase
             .from('orders')
             .update({ status: 'completed', dispute_reason: null })
             .eq('id', params.id);
 
-        // 2. FORCE Penalty: Overwrite any triggers by setting trust_score to 50 specifically
-        const { error: penaltyError } = await supabase
-            .from('profiles')
-            .update({ trust_score: 50 })
-            .eq('id', user?.id);
+        // 2. Penalty
+        // Deduct 50 trust score for current user to show effect in demo
+        let newPenaltyScore = 0;
+        if (user) {
+            newPenaltyScore = Math.max((user.trust_score || 95) - 50, 0);
+            await supabase
+                .from('profiles')
+                .update({ trust_score: newPenaltyScore })
+                .eq('id', user.id);
+        }
+
+        // Also deduct for the other party
+        const otherPartyId = user?.id === orderData.buyer_id ? orderData.seller_id : orderData.buyer_id;
+        if (otherPartyId) {
+            const { data: otherProfile } = await supabase.from('profiles').select('trust_score').eq('id', otherPartyId).single();
+            if (otherProfile) {
+                const newOtherScore = Math.max((otherProfile.trust_score || 95) - 50, 0);
+                await supabase.from('profiles').update({ trust_score: newOtherScore }).eq('id', otherPartyId);
+            }
+        }
 
         if (matchError) {
             console.error("Resolution Error:", matchError);
-            // Demo Fallback: Force local state update if DB fails
-            if (user) user.trust_score = 50;
-            toast.info("Demo Mode: Resolution confirmed locally (Trust Score set to 50)");
+            if (user) user.trust_score = newPenaltyScore;
+            toast.info(`Demo Mode: Resolution confirmed locally (Trust Score decreased by 50)`);
             router.push('/dashboard');
         } else {
             // Success path
-            await refreshUser(); // Fetch the new 50 score from DB
-            toast.success("Dispute Resolved. Trust Score PERMANENTLY set to 50.");
+            await refreshUser(); // Fetch the new score from DB
+            toast.success("Dispute Resolved. Fraud penalty applied: Trust Score decreased by -50.");
             router.push('/dashboard');
         }
     };

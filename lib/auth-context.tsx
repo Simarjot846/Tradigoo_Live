@@ -64,15 +64,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           return createdProfile;
         }
-        console.error('Error fetching profile:', JSON.stringify(error, null, 2));
+        // Don't log error if it's an abort error
+        if (!error.message?.includes('aborted')) {
+          console.error('Error fetching profile:', error.message);
+        }
         return null;
       }
 
       return profile;
     } catch (err: any) {
-      // Handle abort errors gracefully
+      // Handle abort errors gracefully - don't log them
       if (err.name === 'AbortError' || err.message?.includes('aborted')) {
-        console.debug('[Auth] Profile fetch aborted (benign)');
         return null;
       }
       console.error('Error in fetchUserProfile:', err);
@@ -131,12 +133,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (err: any) {
-        // Ignore AbortError as it usually happens during hot reloads or strict mode cleanup
+        // Silently ignore AbortError - it's expected in development with React Strict Mode
         if (err.name === 'AbortError' || err.message?.includes('aborted')) {
-          console.debug("[Auth] Init aborted (benign)");
           return;
         }
-        console.error("[Auth] Init error:", err);
+        // Only log non-abort errors
+        if (!err.message?.includes('aborted')) {
+          console.error("[Auth] Init error:", err);
+        }
       } finally {
         if (mounted) {
           setLoading(false);
