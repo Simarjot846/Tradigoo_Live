@@ -15,8 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import React, { memo, useCallback } from "react";
-import GreenScoreMeter from "@/components/shared/GreenScoreMeter";
-import LiveDemandCard from "@/components/dashboard/LiveDemandCard";
 import TopWholesalers from "@/components/dashboard/TopWholesalers";
 import SeasonalTrends from "@/components/dashboard/SeasonalTrends";
 import WeatherInsightsWidget from "@/components/dashboard/WeatherInsightsWidget";
@@ -43,11 +41,6 @@ export function BuyerDashboard() {
     const { user } = useAuth();
     const router = useRouter();
 
-    // AI Trade Brain State
-    const [aiQuery, setAiQuery] = useState("");
-    const [aiResponse, setAiResponse] = useState<string | null>(null);
-    const [aiLoading, setAiLoading] = useState(false);
-
     const { data: products = [], isLoading: loading } = useQuery({
         queryKey: ['products'],
         queryFn: async () => {
@@ -67,23 +60,6 @@ export function BuyerDashboard() {
 
     const recommendedProducts = products.slice(0, 5);
     const marketplacePreview = products.slice(5, 9);
-
-    const handleAITradeBrain = async () => {
-        if (!aiQuery) return;
-        setAiLoading(true);
-        try {
-            const res = await fetch("/api/trade-brain", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: aiQuery })
-            });
-            const data = await res.json();
-            setAiResponse(data.recommendation);
-        } catch (e) {
-            setAiResponse("Could not reach Pathway/Gemini at the moment.");
-        }
-        setAiLoading(false);
-    };
 
     if (loading) {
         return <DashboardSkeleton />;
@@ -109,40 +85,7 @@ export function BuyerDashboard() {
                             Discover the best sustainable products from trusted wholesalers.
                         </p>
                     </div>
-                    {/* Live Green Score Component Added Here */}
-                    <div className="w-full md:w-80">
-                        <GreenScoreMeter />
-                    </div>
-                </div>
-
-                {/* AI Trade Brain & Live Pathway Data */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-                    <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/20 shadow-lg animate-fade-in">
-                        <h2 className="text-xl font-bold dark:text-white flex items-center gap-2 mb-4">
-                            <Sparkles className="w-6 h-6 text-emerald-500" /> Smart Assistant
-                        </h2>
-                        <div className="flex gap-2 mb-4">
-                            <Input
-                                placeholder="E.g. Find organic cotton near Punjab with the best quality..."
-                                className="bg-zinc-100 dark:bg-zinc-950 border-emerald-500/30"
-                                value={aiQuery}
-                                onChange={(e) => setAiQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAITradeBrain()}
-                            />
-                            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleAITradeBrain} disabled={aiLoading}>
-                                {aiLoading ? 'Thinking...' : 'Match'}
-                            </Button>
-                        </div>
-                        {aiResponse && (
-                            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-800 dark:text-emerald-200 text-sm animate-fade-in">
-                                <strong>Suggestion:</strong> {aiResponse}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="w-full">
-                        <LiveDemandCard />
-                    </div>
+                    {/* User info elements */}
                 </div>
 
                 {/* Additional Pathway Dashboard Streams */}

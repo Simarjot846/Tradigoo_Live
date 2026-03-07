@@ -64,12 +64,12 @@ export async function GET() {
         const today = new Date();
         const upcoming_festivals = [
             {
-                name: "Holi",
-                days_until: Math.max(0, Math.ceil((new Date(today.getFullYear(), 2, 3).getTime() - today.getTime()) / (1000 * 3600 * 24))),
+                name: "Eid",
+                days_until: Math.max(0, Math.ceil((new Date(today.getFullYear(), 2, 20).getTime() - today.getTime()) / (1000 * 3600 * 24))),
                 status: "upcoming",
-                products: ["Colors", "Sweets", "Beverages", "Organic Cotton"],
+                products: ["Rice", "Sweets", "Dry fruits", "Attar"],
                 demand_increase: 2.5,
-                description: "Festival of Colors - High demand in Ludhiana markets"
+                description: "Festival of Eid (Eid-al-fitr) - High demand of clothes,sweets,dry fruits,attar in Ludhiana markets"
             }
         ];
 
