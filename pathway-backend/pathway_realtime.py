@@ -144,7 +144,7 @@ def predict_product_demand(weather_data: Dict) -> List[Dict]:
     
     temp = weather_data.get("temp", 25)
     condition = weather_data.get("condition", "Clear")
-    city = weather_data.get("city", "Delhi")
+    city = weather_data.get("city", "Ludhiana")
     
     predictions = []
     
