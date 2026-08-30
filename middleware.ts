@@ -1,73 +1,12 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  // 1. Create an unmodified response first
-  let response = NextResponse.next({
+  // 1. Create response with request headers
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://skcbzqbtjdctpxtgglbv.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrY2J6cWJ0amRjdHB4dGdnbGJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNzMzNjEsImV4cCI6MjA4MzY0OTM2MX0.qP9uYxXRD8pYYG1pLK49HHZ3BD9wEPny2v4gQAClC7Q',
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          // Update the request cookies (so server components see the new state)
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-          // Update the response cookies (so the browser sees the new state)
-          response = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-
-  // 2. Refresh the session
-  // This call is critical. It accesses the session, which may trigger a refresh.
-  // If a refresh happens, the `setAll` method above is called, updating `response`.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    // Unified Dashboard: No role-based redirection needed.
-    // All users go to /dashboard and the page handles the view.
-  }
-
-  // Protected routes
-  const protectedRoutes = ['/dashboard', '/marketplace', '/product', '/order'];
-  const isProtectedRoute = protectedRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  );
-
-  // Redirect to login if accessing protected route without auth
-  if (isProtectedRoute && !user) {
-    const redirectUrl = new URL('/auth/login', request.url);
-    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Redirect to dashboard if accessing auth pages while logged in
-  const authRoutes = ['/auth/login', '/auth/signup'];
-  const isAuthRoute = authRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  );
-
-  if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
 
   // Add security headers
   response.headers.set('X-Frame-Options', 'DENY');

@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         name: userData.name || '',
         phone: userData.phone || null,
         business_name: userData.business_name || '',
-        location: userData.location || '',
+        location: userData.location || 'India',
         trust_score: 500,
         total_orders: 0,
         successful_orders: 0,

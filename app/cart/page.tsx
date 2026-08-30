@@ -1,25 +1,21 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
-export default function CartPage() {
+function CartContent() {
     const { user } = useAuth();
     const router = useRouter();
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [checkoutLoading, setCheckoutLoading] = useState(false);
-
-    useEffect(() => {
-        if (user) {
-            fetchCart();
-        }
-    }, [user]);
 
     const fetchCart = async () => {
         try {
@@ -35,8 +31,13 @@ export default function CartPage() {
         }
     };
 
+    useEffect(() => {
+        if (user) {
+            fetchCart();
+        }
+    }, [user]);
+
     const updateQuantity = async (id: string, newQuantity: number) => {
-        // Optimistic UI update
         const oldItems = [...cartItems];
         setCartItems(items => items.map(item =>
             item.id === id ? { ...item, quantity: newQuantity } : item
@@ -49,10 +50,10 @@ export default function CartPage() {
                 body: JSON.stringify({ id, quantity: newQuantity })
             });
             if (!res.ok) throw new Error('Update failed');
-            fetchCart(); // Sync with server
+            fetchCart();
         } catch (error) {
             console.error('Failed to update quantity:', error);
-            setCartItems(oldItems); // Revert on error
+            setCartItems(oldItems);
         }
     };
 
@@ -75,12 +76,12 @@ export default function CartPage() {
 
             if (data.success) {
                 if (data.orderIds && data.orderIds.length > 0) {
-                    router.push(`/orders-received`); // Or tracking page
+                    router.push(`/orders-received`);
                 } else {
                     router.push('/dashboard');
                 }
             } else {
-                alert('Checkout failed: ' + data.error);
+                alert('Checkout failed: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Checkout error:', error);
@@ -94,19 +95,14 @@ export default function CartPage() {
     const tax = subtotal * 0.18;
     const total = subtotal + tax;
 
-    if (loading) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">Loading Cart...</div>;
-
     return (
         <div className="min-h-screen pb-20 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden transition-colors duration-300">
-            {/* Design System: Grainy Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-white dark:via-zinc-950 to-white dark:to-zinc-950" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-20 bg-repeat mix-blend-overlay" />
                 <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[100px] mix-blend-screen" />
             </div>
 
             <div className="container mx-auto px-6 py-10 relative z-10">
-                {/* Header */}
                 <div className="mb-8">
                     <Button
                         variant="ghost"
@@ -121,7 +117,13 @@ export default function CartPage() {
                     </h1>
                 </div>
 
-                {cartItems.length === 0 ? (
+                {loading ? (
+                    <div className="space-y-4 max-w-3xl">
+                        {[1, 2].map((n) => (
+                            <div key={n} className="h-32 rounded-2xl bg-white/40 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 animate-pulse" />
+                        ))}
+                    </div>
+                ) : cartItems.length === 0 ? (
                     <div className="text-center py-20 bg-white dark:bg-zinc-900/40 rounded-3xl border border-zinc-200 dark:border-white/5 backdrop-blur-md shadow-sm dark:shadow-none">
                         <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🛒</div>
                         <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Your cart is empty</h2>
@@ -132,20 +134,14 @@ export default function CartPage() {
                     </div>
                 ) : (
                     <div className="grid lg:grid-cols-3 gap-12">
-                        {/* Cart Items List */}
                         <div className="lg:col-span-2 space-y-4">
-                            {cartItems.map((item, i) => (
-                                <div
-                                    key={item.id}
-                                    
-                                    
-                                    
-                                >
+                            {cartItems.map((item) => (
+                                <div key={item.id}>
                                     <Card className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 p-6 backdrop-blur-md hover:border-zinc-300 dark:hover:border-white/10 transition-colors shadow-sm dark:shadow-none">
                                         <div className="flex flex-col md:flex-row gap-6 items-center">
                                             <div className="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center justify-center text-3xl shrink-0 overflow-hidden relative border border-zinc-200 dark:border-white/5">
                                                 {item.product?.image_url ? (
-                                                    <img src={item.product.image_url} alt={item.product.name} className="object-cover w-full h-full" />
+                                                    <Image src={item.product.image_url} alt={item.product.name || 'Product'} fill unoptimized sizes="96px" className="object-cover" />
                                                 ) : (
                                                     <span>📦</span>
                                                 )}
@@ -184,12 +180,7 @@ export default function CartPage() {
                             ))}
                         </div>
 
-                        {/* Order Summary */}
-                        <div
-                            
-                            
-                            
-                        >
+                        <div>
                             <Card className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 p-8 backdrop-blur-md sticky top-24 shadow-sm dark:shadow-none">
                                 <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">Order Summary</h2>
 
@@ -232,5 +223,13 @@ export default function CartPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function CartPage() {
+    return (
+        <AuthGuard>
+            <CartContent />
+        </AuthGuard>
     );
 }

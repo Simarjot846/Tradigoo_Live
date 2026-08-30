@@ -14,7 +14,9 @@ import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import QRCode from "qrcode";
 
-export default function OrdersReceivedPage() {
+import { AuthGuard } from "@/components/auth/auth-guard";
+
+function OrdersReceivedContent() {
     const { user } = useAuth();
     const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
@@ -22,40 +24,47 @@ export default function OrdersReceivedPage() {
     const [filter, setFilter] = useState('All Orders');
 
     useEffect(() => {
+        let isMounted = true;
+
         async function loadData() {
             if (!user) return;
-            const supabase = createClient();
-
-            let query = supabase
-                .from('orders')
-                .select('*, product:products!product_id(name, image_url, unit), buyer:profiles!buyer_id(business_name)')
-                .order('created_at', { ascending: false });
-
-            // Apply simplistic status filter if needed
-            // For MVP "All Orders" usually shows everything
-
-            const { data, error } = await query;
-            if (error) {
-                console.error(error);
-                toast.error("Failed to load orders");
-            } else {
-                setOrders(data || []);
+            try {
+                const res = await fetch(`/api/orders?role=wholesaler&userId=${user.id}&limit=50`, {
+                    signal: AbortSignal.timeout(4000),
+                });
+                if (!res.ok) throw new Error("Failed to fetch orders");
+                const data = await res.json();
+                if (isMounted) {
+                    setOrders(Array.isArray(data) ? data : []);
+                }
+            } catch (err) {
+                console.error("Error loading wholesaler orders:", err);
+                if (isMounted) {
+                    setOrders([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
-            setLoading(false);
         }
+
         loadData();
+
+        return () => {
+            isMounted = false;
+        };
     }, [user]);
 
     const filteredOrders = filter === 'All Orders'
         ? orders
-        : orders.filter(o => o.status.replace(/_/g, ' ').toLowerCase().includes(filter.toLowerCase()));
+        : orders.filter(o => (o.status || '').replace(/_/g, ' ').toLowerCase().includes(filter.toLowerCase()));
 
     return (
         <div className="min-h-screen pb-20 dark:bg-zinc-950 bg-background relative overflow-hidden transition-colors duration-300">
             {/* Design System: Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-zinc-950 to-zinc-950 hidden dark:block" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-0 dark:opacity-20 bg-repeat mix-blend-overlay" />
             </div>
 
             <div className="container mx-auto px-6 py-10 relative z-10">
@@ -70,8 +79,6 @@ export default function OrdersReceivedPage() {
                             <ArrowLeft className="w-4 h-4 mr-2" /> Back
                         </Button>
                         <h1
-                            
-                            
                             className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight"
                         >
                             Orders Received
@@ -82,7 +89,7 @@ export default function OrdersReceivedPage() {
 
                 {/* Tabs / Filters */}
                 <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
-                    {['All Orders', 'Pending', 'Shipped', 'Delivered', 'Cancelled'].map((status, i) => (
+                    {['All Orders', 'Pending', 'Shipped', 'Delivered', 'Cancelled'].map((status) => (
                         <Button
                             key={status}
                             onClick={() => setFilter(status)}
@@ -97,7 +104,11 @@ export default function OrdersReceivedPage() {
                 {/* Orders List */}
                 <div className="space-y-4">
                     {loading ? (
-                        <div className="text-center py-20 text-zinc-500">Loading orders...</div>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map((n) => (
+                                <div key={n} className="h-40 rounded-2xl bg-white/40 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 animate-pulse" />
+                            ))}
+                        </div>
                     ) : filteredOrders.length === 0 ? (
                         <div className="text-center py-20 bg-zinc-50 dark:bg-zinc-900/40 rounded-3xl border border-zinc-200 dark:border-white/5">
                             <h3 className="text-zinc-900 dark:text-zinc-300 font-bold mb-2">No orders found</h3>
@@ -365,5 +376,13 @@ function ManageOrderDialog({ order, onUpdate }: { order: any, onUpdate: () => vo
                 </div>
             </DialogContent>
         </Dialog>
+    );
+}
+
+export default function OrdersReceivedPage() {
+    return (
+        <AuthGuard>
+            <OrdersReceivedContent />
+        </AuthGuard>
     );
 }

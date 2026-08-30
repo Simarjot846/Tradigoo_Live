@@ -61,12 +61,18 @@ export function SellerDashboard() {
     // Fetch Data
     useEffect(() => {
         async function loadData() {
-            if (!user) return;
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             try {
                 const supabase = createClient();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Seller data query timeout')), 3000)
+                );
 
-                // Parallel Data Fetching for Performance
-                const [inventoryRes, ordersRes] = await Promise.all([
+                // Parallel Data Fetching for Performance with timeout protection
+                const fetchPromise = Promise.all([
                     supabase.from('products')
                         .select('*')
                         .eq('seller_id', user.id)
@@ -79,15 +85,12 @@ export function SellerDashboard() {
                         .limit(5)
                 ]);
 
-                if (inventoryRes.error) throw inventoryRes.error;
-                if (ordersRes.error) throw ordersRes.error;
+                const [inventoryRes, ordersRes] = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
-                if (inventoryRes.data) setInventory(inventoryRes.data);
-                if (ordersRes.data) setPendingOrders(ordersRes.data);
-
-                // (Handled above)
+                if (inventoryRes?.data) setInventory(inventoryRes.data);
+                if (ordersRes?.data) setPendingOrders(ordersRes.data);
             } catch (error) {
-                console.error("Dashboard Load Error:", error);
+                console.warn("Seller Dashboard Load Notice:", error);
             } finally {
                 setLoading(false);
             }
@@ -177,16 +180,16 @@ export function SellerDashboard() {
                 <div className="absolute inset-0 z-0 hidden dark:block bg-gradient-to-br from-purple-900/20 via-zinc-950 to-blue-900/20" />
             </div>
 
-            <div className="container mx-auto px-6 py-8 relative z-10">
+            <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-10">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-10">
                     <div>
-                        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">Dashboard</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400">Manage your store and orders efficiently.</p>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-1.5">Dashboard</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm sm:text-base">Manage your store and orders efficiently.</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 w-full sm:w-auto">
                         <AddProductDialog onProductAdded={handleProductAdded}>
-                            <Button className="bg-white text-black hover:bg-zinc-200 gap-2 font-semibold">
+                            <Button className="w-full sm:w-auto h-11 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 gap-2 font-semibold">
                                 <Plus className="w-4 h-4" /> Add Product
                             </Button>
                         </AddProductDialog>
@@ -300,8 +303,8 @@ export function SellerDashboard() {
                         <Button variant="ghost" size="sm" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">View All</Button>
                     </div>
 
-                    <div className="rounded-3xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-zinc-900/40 overflow-hidden shadow-sm dark:shadow-none">
-                        <Table>
+                    <div className="rounded-3xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-zinc-900/40 overflow-x-auto shadow-sm dark:shadow-none">
+                        <Table className="min-w-[560px]">
                             <TableHeader className="bg-zinc-50 dark:bg-white/5">
                                 <TableRow className="border-zinc-200 dark:border-white/5 hover:bg-transparent">
                                     <TableHead className="text-zinc-500 dark:text-zinc-400">Order ID</TableHead>

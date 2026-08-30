@@ -7,13 +7,15 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                // Cache data for 5 minutes by default
-                staleTime: 5 * 60 * 1000,
-                // Retry failed requests once
-                retry: 1,
-                // Refetch on window focus implies data is always fresh, which causes "lag" feel if network is slow.
-                // Turn off for better UX unless critical.
+                // Cache data for 10 minutes by default for instant loads
+                staleTime: 10 * 60 * 1000,
+                gcTime: 15 * 60 * 1000,
+                // Zero automatic retry loops to prevent lag cascades
+                retry: false,
+                // Disable background refetches on window focus or reconnect
                 refetchOnWindowFocus: false,
+                refetchOnReconnect: false,
+                networkMode: 'always',
             },
         },
     }));

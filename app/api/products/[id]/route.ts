@@ -3,9 +3,10 @@ import { createClient } from '@/lib/supabase-server';
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     
     // Get the authenticated user
@@ -19,7 +20,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('seller_id', user.id); // Extra safety check
 
     if (error) {

@@ -7,7 +7,7 @@ export default function BestWholesaler() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        // Set mock data immediately as fallback
+        let isMounted = true;
         const mockData = {
             name: "GreenHarvest Traders",
             price: "45",
@@ -16,17 +16,44 @@ export default function BestWholesaler() {
             green_score: 92
         };
 
-        fetch('http://localhost:8000/api/smart-matching?product=wheat')
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+        fetch('/api/pathway-top-wholesalers', { signal: controller.signal })
             .then(res => {
                 if (!res.ok) throw new Error('Failed to fetch');
                 return res.json();
             })
-            .then(data => setWholesaler(data.wholesalers[0]))
-            .catch(err => {
-                console.error('Smart matching API unavailable, using demo data:', err.message);
-                setError(true);
-                setWholesaler(mockData);
+            .then(data => {
+                if (isMounted) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        setWholesaler({
+                            name: data[0].top_wholesaler,
+                            price: "45",
+                            delivery: "2-3 days",
+                            rating: "4.8",
+                            green_score: 92
+                        });
+                    } else {
+                        setWholesaler(mockData);
+                    }
+                }
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setError(true);
+                    setWholesaler(mockData);
+                }
+            })
+            .finally(() => {
+                clearTimeout(timeoutId);
             });
+
+        return () => {
+            isMounted = false;
+            controller.abort();
+            clearTimeout(timeoutId);
+        };
     }, []);
 
     if (!wholesaler) return <div className="p-6 rounded-xl border border-white/10 bg-black/40 animate-pulse text-green-500">Connecting to smart matching engine...</div>;

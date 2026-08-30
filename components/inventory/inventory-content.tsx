@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase-client";
 import { AddProductDialog } from "@/components/inventory/add-product-dialog";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 interface InventoryContentProps {
     initialProducts: any[];
@@ -72,7 +73,6 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
             {/* Design System: Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-zinc-950 to-zinc-950 hidden dark:block" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-0 dark:opacity-20 bg-repeat mix-blend-overlay" />
             </div>
 
             <div className="container mx-auto px-6 py-10 relative z-10">
@@ -124,14 +124,11 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                     </Button>
                 </div>
 
-                {/* Table */}
+                {/* Table with Responsive Horizontal Scroll */}
                 <div
-                    
-                    
-                    
-                    className="rounded-2xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-white/[0.02] backdrop-blur-md overflow-visible shadow-lg dark:shadow-2xl"
+                    className="rounded-2xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-white/[0.02] backdrop-blur-md overflow-x-auto shadow-lg dark:shadow-2xl"
                 >
-                    <Table>
+                    <Table className="min-w-[620px]">
                         <TableHeader>
                             <TableRow className="hover:bg-transparent border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/5">
                                 <TableHead className="text-zinc-500 dark:text-zinc-400 font-medium h-14 pl-6">Product Details</TableHead>
@@ -161,9 +158,9 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
                                     <TableRow key={product.id} className="hover:bg-zinc-50 dark:hover:bg-white/[0.02] border-zinc-100 dark:border-white/5 group transition-colors">
                                         <TableCell className="py-4 pl-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl overflow-hidden">
+                                                <div className="w-12 h-12 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl overflow-hidden relative">
                                                     {product.image_url ? (
-                                                        <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                                                        <Image src={product.image_url} alt="" fill unoptimized sizes="48px" className="object-cover" />
                                                     ) : (
                                                         "📦"
                                                     )}

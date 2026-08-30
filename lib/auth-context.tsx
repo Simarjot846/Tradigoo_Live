@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { User, UserRole } from './supabase';
@@ -26,207 +26,205 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = createClient();
 
-  const fetchUserProfile = async (authUser: SupabaseUser) => {
+  const buildFallbackProfile = useCallback((authUser: SupabaseUser): User => {
+    return {
+      id: authUser.id,
+      email: authUser.email || 'user@example.com',
+      name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Trader',
+      phone: authUser.phone || authUser.user_metadata?.phone || null,
+      role: (authUser.user_metadata?.role as UserRole) || 'retailer',
+      business_name: authUser.user_metadata?.business_name || '',
+      location: authUser.user_metadata?.location || 'India',
+      trust_score: 500,
+      total_orders: 0,
+      successful_orders: 0,
+      disputed_orders: 0,
+      created_at: authUser.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }, []);
+
+  const fetchUserProfile = useCallback(async (authUser: SupabaseUser): Promise<User> => {
+    const fallback = buildFallbackProfile(authUser);
     try {
-      const { data: profile, error } = await supabase
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile query timeout')), 2500)
+      );
+      const queryPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        // Ignore 'Row not found' (PGRST116) as it might happen during  signup before trigger
-        if (error.code === 'PGRST116') {
-          console.warn('Profile missing (PGRST116). Auto-creating profile for:', authUser.id);
+      const { data: profile } = (await Promise.race([queryPromise, timeoutPromise])) as any;
 
-          const newProfile = {
-            id: authUser.id,
-            email: authUser.email || 'user@example.com',
-            role: 'retailer', // Default role
-            name: authUser.email?.split('@')[0] || 'Trader',
-            business_name: 'New Trader Business',
-            location: 'Delhi, India',
-            trust_score: 100,
-            total_orders: 0
-          };
-
-          // Insert the missing profile
-          const { data: createdProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert(newProfile as any) // Type cast to avoid strict shape issues during quick fix
-            .select()
-            .single();
-
-          if (createError) {
-            console.error('Failed to auto-create profile:', createError);
-            return null;
-          }
-
-          return createdProfile;
-        }
-        // Don't log error if it's an abort error
-        if (!error.message?.includes('aborted')) {
-          console.error('Error fetching profile:', error.message);
-        }
-        return null;
+      if (!profile) {
+        // Ensure profile row exists in background without blocking
+        supabase.from('profiles').upsert(fallback as any).then(() => {}, () => {});
+        return fallback;
       }
 
-      return profile;
-    } catch (err: any) {
-      // Handle abort errors gracefully - don't log them
-      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
-        return null;
-      }
-      console.error('Error in fetchUserProfile:', err);
-      return null;
+      return {
+        ...fallback,
+        ...profile,
+        // Preserve essential user identity
+        id: authUser.id,
+        email: authUser.email || profile.email || fallback.email,
+      };
+    } catch {
+      return fallback;
     }
-  };
+  }, [supabase, buildFallbackProfile]);
 
-  const refreshUser = async () => {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-
-    if (authUser) {
-      const profile = await fetchUserProfile(authUser);
-      setUser(profile);
-    } else {
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const fallback = buildFallbackProfile(authUser);
+        setUser(fallback);
+        fetchUserProfile(authUser).then(p => setUser(p)).catch(() => {});
+      } else {
+        setUser(null);
+      }
+    } catch {
       setUser(null);
     }
-  };
+  }, [supabase, buildFallbackProfile, fetchUserProfile]);
 
   useEffect(() => {
     let mounted = true;
-    const abortController = new AbortController();
+    let initialSessionHandled = false;
 
-    // Safety timeout - reduced to 10s to give more time
-    const timer = setTimeout(() => {
-      if (mounted) {
-        setLoading((currentLoading) => {
-          if (currentLoading) {
-            // If still loading after 10s, assume public.
-            console.warn('Auth initialization timeout - assuming public access');
-            return false;
-          }
-          return currentLoading;
-        });
+    // Safety timeout: Ensure loading is never true for more than 2.5 seconds
+    const safetyTimer = setTimeout(() => {
+      if (mounted && loading) {
+        setLoading(false);
       }
-    }, 10000);
+    }, 2500);
 
-    const initializeAuth = async () => {
+    const applyUserSession = async (authUser: SupabaseUser | null) => {
+      if (!mounted) return;
+
+      if (!authUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // Step 1: Set user IMMEDIATELY in 0ms from in-memory session metadata
+      const instantProfile = buildFallbackProfile(authUser);
+      setUser(instantProfile);
+      setLoading(false);
+
+      // Step 2: Asynchronously enrich from database in background
       try {
-        const start = performance.now();
-        // getUser is more secure and reliable than getSession for auth status
-        const { data: { user: authUser }, error } = await supabase.auth.getUser();
-
-        if (!mounted || abortController.signal.aborted) return;
-
-        if (error) {
-          // If error (e.g. no session), just finish loading
-          console.log('No active session');
-          setLoading(false);
-          return;
-        }
-
-        if (authUser) {
-          const profile = await fetchUserProfile(authUser);
-          if (mounted && !abortController.signal.aborted && profile) {
-            setUser(profile);
-          }
-        }
-      } catch (err: any) {
-        // Silently ignore AbortError - it's expected in development with React Strict Mode
-        if (err.name === 'AbortError' || err.message?.includes('aborted')) {
-          return;
-        }
-        // Only log non-abort errors
-        if (!err.message?.includes('aborted')) {
-          console.error("[Auth] Init error:", err);
-        }
-      } finally {
+        const fullProfile = await fetchUserProfile(authUser);
         if (mounted) {
-          setLoading(false);
-          clearTimeout(timer);
+          setUser(fullProfile);
         }
+      } catch (err) {
+        console.warn("Background profile fetch:", err);
       }
     };
 
-    initializeAuth();
+    // 1. Initial Session Inspection
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      if (session?.user) {
+        initialSessionHandled = true;
+        applyUserSession(session.user);
+      } else if (!error) {
+        // Give a short 200ms grace period for local storage / cookie hydration
+        setTimeout(async () => {
+          if (!mounted || initialSessionHandled) return;
+          const retry = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+          if (mounted && !initialSessionHandled) {
+            applyUserSession(retry.data?.session?.user || null);
+          }
+        }, 200);
+      } else {
+        applyUserSession(null);
+      }
+    }).catch(() => {
+      if (mounted) applyUserSession(null);
+    });
 
-    // Listen for auth changes
+    // 2. Subscribe to all Supabase Auth State changes (The Single Authority)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: any, session: any) => {
+      async (event, session) => {
         if (!mounted) return;
+        initialSessionHandled = true;
 
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || !session?.user) {
           setUser(null);
           setLoading(false);
           return;
         }
 
-        if (session?.user) {
-          // Optimistic update if we already have a user and IDs match, 
-          // might not need to refetch immediately unless it's a profile update event?
-          // But strict generic auth change (like token refresh) shouldn't trigger heavy DB call ideally.
-
+        if (session.user) {
           if (event === 'TOKEN_REFRESHED' && user?.id === session.user.id) {
-            // Skip profile refetch on token refresh to reduce load
             return;
           }
-
-          try {
-            // Only fetch if necessary
-            const profile = await fetchUserProfile(session.user);
-            if (mounted) {
-              setUser(prev => {
-                if (JSON.stringify(prev) === JSON.stringify(profile)) return prev;
-                return profile;
-              });
-            }
-          } catch (error) {
-            console.error("Error updating profile on auth change:", error);
-          }
-        } else {
-          setUser(null);
-        }
-        if (mounted) {
-          setLoading(false);
-          clearTimeout(timer);
+          await applyUserSession(session.user);
         }
       }
-
     );
 
     return () => {
       mounted = false;
-      abortController.abort();
       subscription.unsubscribe();
-      clearTimeout(timer);
+      clearTimeout(safetyTimer);
     };
-  }, []);
+  }, [supabase, buildFallbackProfile, fetchUserProfile]);
 
   const signIn = async (email: string, password: string): Promise<User | null> => {
-    // Use server-side sign-in to ensure cookies set by server are forwarded to the browser
-    const res = await fetch('/api/auth/signin', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    setLoading(true);
+    try {
+      // 1. Attempt client-side Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    const payload = await res.json();
+      if (error) {
+        // Fallback to server API route
+        try {
+          const res = await fetch('/api/auth/signin', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.trim(), password }),
+          });
+          const payload = await res.json();
+          if (res.ok && payload.user) {
+            const instantProfile = buildFallbackProfile(payload.user);
+            setUser(instantProfile);
+            setLoading(false);
+            fetchUserProfile(payload.user).then(p => setUser(p)).catch(() => {});
+            return instantProfile;
+          }
+        } catch {
+          // If server fallback also fails, propagate error
+        }
+        throw error;
+      }
 
-    if (!res.ok) {
-      throw new Error(payload.error || 'Sign in failed');
+      if (data.user) {
+        // Instantly populate user in memory (0ms) before returning
+        const instantProfile = buildFallbackProfile(data.user);
+        setUser(instantProfile);
+        setLoading(false);
+        // Enrich from DB in background
+        fetchUserProfile(data.user).then(p => setUser(p)).catch(() => {});
+        return instantProfile;
+      }
+
+      setLoading(false);
+      return null;
+    } catch (err) {
+      setLoading(false);
+      throw err;
     }
-
-    if (payload.user) {
-      const profile = await fetchUserProfile(payload.user);
-      setUser(profile);
-      return profile;
-    }
-
-    // If server didn't return user, attempt to refresh client session
-    await refreshUser();
-    return user;
   };
 
   const signInWithGoogle = async () => {
@@ -241,85 +239,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-          userData,
-        }),
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: userData.name,
+            role: userData.role || 'retailer',
+            business_name: userData.business_name,
+            phone: userData.phone,
+            location: userData.location,
+          }
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign up');
+      if (error) {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: email.trim(), password, userData }),
+        });
+        const respData = await response.json();
+        if (!response.ok) {
+          throw new Error(respData.error || error.message || 'Failed to sign up');
+        }
+        if (respData.user) {
+          const instantProfile = buildFallbackProfile(respData.user);
+          setUser(instantProfile);
+          setLoading(false);
+          fetchUserProfile(respData.user).then(p => setUser(p)).catch(() => {});
+        }
+        setLoading(false);
+        return;
       }
 
       if (data.user) {
-        // Sign in automatically after successful signup if session is returned
-        // But since we did server-side signup, we might need to rely on the auto-login flow 
-        // or just redirect the user to login if email confirmation is enabled.
-        // Assuming email confirmation is NOT required for this demo or handled via flow:
+        const newProfile: User = {
+          id: data.user.id,
+          email: data.user.email || email.trim(),
+          name: userData.name || email.split('@')[0],
+          role: userData.role || 'retailer',
+          business_name: userData.business_name || '',
+          phone: userData.phone || null,
+          location: userData.location || 'India',
+          trust_score: 500,
+          total_orders: 0,
+          successful_orders: 0,
+          disputed_orders: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
 
-        // Refresh session to get the user logged in on client side if cookies were set by server action?
-        // Wait, the API route used `supabase.auth.signUp`. If email confirmation is off, it "logs in" the user instance 
-        // on that server client. But it doesn't automatically set the cookie for the *browser* unless 
-        // we passed the request cookies/headers in the API route correctly.
-        // Actually, `createServerClient` in the API route uses `cookies()` headers.
-        // Let's check `lib/supabase-server.ts`. It reads cookies.
-
-        // In the API route:
-        // const supabase = await createClient();
-        // await supabase.auth.signUp(...) 
-        // This sets the auth cookie on the *response* of the internal supabase client.
-        // We probably need to make sure the API route returns the session or we handle the client side login content.
-
-        // HOWEVER, simpler approach for now:
-        // Just let the user log in, OR if the API route sets cookies (it might not if we didn't explicitly middleware copy them back),
-        // we can just call signIn with the password immediately after signup to ensure client session is active.
-
-        // Let's stick to the plan: The API creates the account and profile.
-        // Then we can just immediately sign in client-side to establish the local session.
-        try {
-          await signIn(email, password);
-        } catch (signInError: any) {
-          // If auto-login fails (e.g., email not confirmed), we normally shouldn't block the signup success.
-          // The user should just be redirected to login (or dashboard -> login).
-          if (signInError?.message?.includes('Email not confirmed')) {
-            console.warn('Auto-login failed: Email not confirmed. User needs to verify email.');
-            // Do not throw; let the function complete so the UI treats signup as successful
-          } else {
-            // Other errors (like wrong password? shouldn't happen right after signup) 
-            // or network issues should probably be reported.
-            throw signInError;
-          }
-        }
+        await supabase.from('profiles').upsert(newProfile as any);
+        setUser(newProfile);
       }
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      throw err;
     }
   };
 
   const signOut = async () => {
-    // Use server signout to clear server cookies
+    setLoading(true);
     try {
-      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
-    } catch (e) {
-      console.warn('Server signout failed, falling back to client signOut', e);
-      try {
-        await supabase.auth.signOut();
-      } catch { }
+      // 1. Sign out on client to clear local storage tokens
+      await supabase.auth.signOut().catch(() => {});
+      // 2. Sign out on server to clear cookies
+      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    } finally {
+      setUser(null);
+      setLoading(false);
+      router.push('/');
     }
-
-    setUser(null);
-    router.push('/');
   };
 
   const resetPassword = async (email: string) => {
@@ -344,7 +339,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser,
     resetPassword,
     updatePassword
-  }), [user, loading]);
+  }), [user, loading, buildFallbackProfile, fetchUserProfile, refreshUser]);
 
   return (
     <AuthContext.Provider value={value}>

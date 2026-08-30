@@ -47,35 +47,38 @@ export default function OrderTrackingPage() {
     if (!params.id) return;
     const supabase = createClient();
 
-    // Fetch order with product details
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*, product:products(name)')
-      .eq('id', params.id)
-      .single();
+    try {
+      // Fetch order with product details
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, product:products(name)')
+        .eq('id', params.id)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching order:', error);
-      // fallback or redirect?
-    } else {
-      // Flatten structure slightly for easier usage if needed, or just use data.product.name
-      setOrderData({
-        ...data,
-        product_name: data.product.name
-      });
+      if (error) {
+        console.error('Error fetching order:', error);
+      } else if (data) {
+        setOrderData({
+          ...data,
+          product_name: data.product?.name || 'Bulk Trade Product'
+        });
+      }
+    } catch (e) {
+      console.error("fetchOrder exception:", e);
+    } finally {
+      setLoadingOrder(false);
     }
-    setLoadingOrder(false);
   };
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth/login');
+      router.push('/auth/login?redirect=/order/' + params.id);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, params.id]);
 
   useEffect(() => {
     if (user) fetchOrder();
-    // Real-time subscription could go here
+    // Real-time subscription
     const supabase = createClient();
     const channel = supabase
       .channel('order_updates')
@@ -84,23 +87,34 @@ export default function OrderTrackingPage() {
         schema: 'public',
         table: 'orders',
         filter: `id=eq.${params.id}`
-      }, (payload: any) => {
-
-        fetchOrder(); // simple re-fetch on change
+      }, () => {
+        fetchOrder();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [params.id, user, router]);
+  }, [params.id, user]);
 
-  if (loading || !user || loadingOrder || !orderData) {
+  if (loading || !user || loadingOrder) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-zinc-800 border-t-purple-500 rounded-full animate-spin" />
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white gap-3">
+        <div className="w-12 h-12 border-4 border-zinc-800 border-t-purple-500 rounded-full animate-spin" />
+        <p className="text-sm text-zinc-400">Loading order details...</p>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white gap-4">
+        <AlertTriangle className="w-12 h-12 text-amber-500" />
+        <h2 className="text-2xl font-bold">Order Not Found</h2>
+        <p className="text-zinc-400 text-sm">We could not locate the details for this order.</p>
+        <Button onClick={() => router.push('/my-orders')} className="bg-blue-600 hover:bg-blue-500">
+          View My Orders
+        </Button>
       </div>
     );
   }
@@ -309,7 +323,6 @@ export default function OrderTrackingPage() {
       {/* Global Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none text-left opacity-0 dark:opacity-100 transition-opacity duration-300">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-zinc-950 to-zinc-950" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 bg-repeat mix-blend-overlay" />
         <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen" />
         <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] mix-blend-screen" />
       </div>

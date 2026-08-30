@@ -4,20 +4,45 @@ import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function LiveDemand() {
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<any[]>([]);
 
     useEffect(() => {
+        let isMounted = true;
+        const defaultDemand = [
+            { area: 'Delhi NCR', demand: 780 },
+            { area: 'Mumbai', demand: 920 },
+            { area: 'Bengaluru', demand: 640 },
+            { area: 'Punjab', demand: 850 },
+            { area: 'Gujarat', demand: 710 }
+        ];
+
         const fetchDemand = async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1500);
+
             try {
-                const res = await fetch('http://localhost:8000/api/demand');
-                const json = await res.json();
-                setData(json);
-            } catch (err) { }
-        }
+                const res = await fetch('/api/pathway-stats', { signal: controller.signal });
+                if (res.ok && isMounted) {
+                    const json = await res.json();
+                    if (Array.isArray(json) && json.length > 0) {
+                        setData(json);
+                        return;
+                    }
+                }
+                if (isMounted) setData(defaultDemand as any);
+            } catch (err) {
+                if (isMounted) setData(defaultDemand as any);
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        };
 
         fetchDemand();
-        const interval = setInterval(fetchDemand, 10000);
-        return () => clearInterval(interval);
+        const interval = setInterval(fetchDemand, 15000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
     return (

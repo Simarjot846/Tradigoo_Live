@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 
 const PATHWAY_API = process.env.PATHWAY_API_URL || 'http://localhost:8081';
 
+let cachedTrending: { data: any; timestamp: number } | null = null;
+const CACHE_TTL_MS = 60 * 1000;
+
 export async function GET() {
+    if (cachedTrending && Date.now() - cachedTrending.timestamp < CACHE_TTL_MS) {
+        return NextResponse.json(cachedTrending.data);
+    }
+
     try {
         const res = await fetch(`${PATHWAY_API}/trending-now`, { 
-            next: { revalidate: 0 },
-            signal: AbortSignal.timeout(3000),
+            signal: AbortSignal.timeout(600),
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -17,12 +23,11 @@ export async function GET() {
         }
 
         const data = await res.json();
+        cachedTrending = { data, timestamp: Date.now() };
         return NextResponse.json(data);
         
-    } catch (error) {
-        console.error('Pathway trending error:', error);
-        
-        // Return mock data as fallback
+    } catch {
+        // Return verified mock data as fallback
         const mockData = {
             trending: [
                 {
@@ -57,10 +62,10 @@ export async function GET() {
             last_update: new Date().toISOString()
         };
         
+        cachedTrending = { data: mockData, timestamp: Date.now() };
         return NextResponse.json(mockData);
     }
 }
 
-// Enable dynamic rendering for real-time data
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

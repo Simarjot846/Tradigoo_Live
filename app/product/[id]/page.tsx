@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, TrendingUp, Package, Users, ShieldCheck, ShoppingCart, Zap, Star } from 'lucide-react';
-import { mockUsers } from '@/lib/mock-data';
+import { mockUsers, mockProducts } from '@/lib/mock-data';
 import { getDemandBadgeColor } from '@/lib/ai-recommendations';
 import { createClient } from '@/lib/supabase-client';
+import Image from 'next/image';
 
 export default function ProductDetailPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const [product, setProduct] = useState<any | null>(null);
@@ -23,40 +24,44 @@ export default function ProductDetailPage() {
   const [loadingProduct, setLoadingProduct] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
     async function fetchProduct() {
       const id = Array.isArray(params.id) ? params.id[0] : params.id;
       if (!id) return;
 
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching product:', JSON.stringify(error, null, 2));
-      } else {
-        setProduct(data);
-        if (data) setQuantity(data.min_order_quantity);
+        if (data) {
+          setProduct(data);
+          setQuantity(data.min_order_quantity || 1);
+        } else {
+          // Fallback to mock product if ID matches mock list
+          const mockMatch = mockProducts.find(p => p.id === id);
+          if (mockMatch) {
+            setProduct(mockMatch);
+            setQuantity(mockMatch.min_order_quantity || 1);
+          }
+        }
+      } catch (err) {
+        const mockMatch = mockProducts.find(p => p.id === id);
+        if (mockMatch) {
+          setProduct(mockMatch);
+          setQuantity(mockMatch.min_order_quantity || 1);
+        }
+      } finally {
+        setLoadingProduct(false);
       }
-      setLoadingProduct(false);
     }
 
-    if (user && !loading) {
-      fetchProduct();
-    }
-  }, [params.id, user, loading]);
+    fetchProduct();
+  }, [params.id]);
 
-  if (loading || !user || loadingProduct) {
+  if (loadingProduct) {
     return (
       <div className="min-h-screen dark:bg-zinc-950 bg-background dark:text-zinc-100 text-foreground relative overflow-hidden transition-colors duration-300">
 
@@ -117,6 +122,10 @@ export default function ProductDetailPage() {
       total_amount: totalAmount,
       expected_profit: expectedProfit
     }));
+    if (!user) {
+      router.push('/auth/login?redirect=/order/confirm');
+      return;
+    }
     router.push('/order/confirm');
   };
 
@@ -125,7 +134,6 @@ export default function ProductDetailPage() {
       {/* Global Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none text-left">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-zinc-950 to-zinc-950 hidden dark:block" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-0 dark:opacity-20 bg-repeat mix-blend-overlay" />
         <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px] mix-blend-screen hidden dark:block" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen hidden dark:block" />
       </div>
@@ -159,10 +167,14 @@ export default function ProductDetailPage() {
               <div className="aspect-video rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 border border-white/10 flex items-center justify-center relative overflow-hidden group">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-20" />
                 {product.image_url ? (
-                  <img
+                  <Image
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-full object-contain"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-contain"
+                    unoptimized
+                    priority
                   />
                 ) : (
                   <span className="text-9xl relative z-10 transform transition-transform duration-500 group-hover:scale-110 drop-shadow-2xl">

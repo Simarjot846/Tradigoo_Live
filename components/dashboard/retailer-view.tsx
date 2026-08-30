@@ -16,7 +16,6 @@ export function RetailerView() {
             {/* Global Background Effects matching Marketplace */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-zinc-950 to-zinc-950" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 bg-repeat mix-blend-overlay" />
                 <div className="absolute top-[10%] right-[10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] mix-blend-screen" />
             </div>
 
@@ -142,9 +141,7 @@ function ProductCard({ index }: { index: number }) {
                 <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
                         <h3 className="font-bold text-lg text-white group-hover:text-blue-400 transition-colors truncate">Smart Watch Pro</h3>
-                        <div className="text-yellow-400 text-xs font-bold bg-yellow-400/10 px-2 py-1 rounded border border-yellow-400/20">
-                            4.8 ★
-                        </div>
+                        {/* Rating shown only when real rating data exists */}
                     </div>
                     <p className="text-sm text-zinc-500 mb-4 line-clamp-2">Best-selling smartwatch with heart rate monitoring.</p>
 

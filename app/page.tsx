@@ -20,10 +20,10 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl transition-colors duration-300">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-2xl shadow-lg shadow-blue-500/20 text-white">T</div>
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-purple-700 to-blue-700 dark:from-white dark:via-blue-100 dark:to-white/60 tracking-tight">Tradigoo</span>
+        <div className="container mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl shadow-lg shadow-blue-500/20 text-white">T</div>
+            <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-purple-700 to-blue-700 dark:from-white dark:via-blue-100 dark:to-white/60 tracking-tight">Tradigoo</span>
           </div>
           <div className="hidden md:flex items-center gap-10 text-sm font-medium text-muted-foreground dark:text-white/70">
             <Link href="#features" className="hover:text-primary dark:hover:text-white transition-colors relative group">
@@ -39,10 +39,10 @@ export default function LandingPage() {
               <span className="absolute inset-x-0 -bottom-1 h-px bg-primary dark:bg-white scale-x-0 group-hover:scale-x-100 transition-transform" />
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
-            <Link href="/auth/login" className="text-sm font-medium text-muted-foreground dark:text-white/70 hover:text-primary dark:hover:text-white transition-colors hidden sm:block">Log in</Link>
-            <Button asChild className="bg-primary text-primary-foreground dark:bg-white dark:text-black hover:opacity-90 rounded-full px-8 py-6 text-sm font-semibold transition-transform hover:scale-105 shadow-lg shadow-blue-500/10">
+            <Link href="/auth/login" className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-white/70 hover:text-primary dark:hover:text-white transition-colors hidden sm:block">Log in</Link>
+            <Button asChild className="bg-primary text-primary-foreground dark:bg-white dark:text-black hover:opacity-90 rounded-full px-4 sm:px-8 py-2 sm:py-6 text-xs sm:text-sm font-semibold transition-transform hover:scale-105 shadow-lg shadow-blue-500/10 h-9 sm:h-auto">
               <Link href="/auth/signup">Get Started</Link>
             </Button>
           </div>
@@ -50,55 +50,43 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 px-6 overflow-hidden">
+      <section className="relative pt-24 pb-16 sm:pt-32 sm:pb-24 md:pt-48 md:pb-40 px-3 sm:px-6 overflow-hidden">
         <AuroraBackground />
 
-        <div className="container mx-auto max-w-7xl relative z-10 flex flex-col lg:flex-row items-center gap-16 lg:gap-24 text-center lg:text-left">
+        <div className="container mx-auto max-w-7xl relative z-10 flex flex-col lg:flex-row items-center gap-10 sm:gap-16 lg:gap-24 text-center lg:text-left">
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div
-              
-              
-              
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-md mb-10 mx-auto lg:mx-0 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-md mb-6 sm:mb-10 mx-auto lg:mx-0 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
             >
-              <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 border-0 px-3">New V2.0</Badge>
-              <span className="text-sm text-blue-600 dark:text-blue-100 font-medium">The intelligent sourcing OS</span>
+              <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 border-0 px-2.5 sm:px-3 text-xs">New V2.0</Badge>
+              <span className="text-xs sm:text-sm text-blue-600 dark:text-blue-100 font-medium">The intelligent sourcing OS</span>
             </div>
 
             <h1
-              
-              
-              
-              className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 leading-[1.1]"
+              className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter mb-6 sm:mb-8 leading-[1.1] break-words"
             >
               <span className="block text-gray-900 dark:text-white drop-shadow-sm dark:drop-shadow-2xl">Sourcing</span>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-400 dark:via-purple-300 dark:to-blue-400 animate-gradient pb-4">Reimagined.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-400 dark:via-purple-300 dark:to-blue-400 animate-gradient pb-2 sm:pb-4">Reimagined.</span>
             </h1>
 
             <p
-              
-              
-              
-              className="text-xl md:text-2xl text-muted-foreground dark:text-blue-100/60 max-w-2xl mx-auto lg:mx-0 mb-14 leading-relaxed font-light"
+              className="text-base sm:text-xl md:text-2xl text-muted-foreground dark:text-blue-100/60 max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-14 leading-relaxed font-light"
             >
               The first AI-powered platform that connects you directly with verified manufacturers. <span className="text-foreground dark:text-white/90 font-normal">No middlemen. Zero risk.</span>
             </p>
 
 
             <div
-              
-              
-              
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6"
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6"
             >
-              <Button asChild size="lg" className="h-16 px-10 rounded-full text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/40 w-full sm:w-auto group transition-all hover:scale-105">
+              <Button asChild size="lg" className="h-12 sm:h-16 px-6 sm:px-10 rounded-full text-base sm:text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/40 w-full sm:w-auto group transition-all hover:scale-105">
                 <Link href="/auth/signup">
                   Start Sourcing
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white backdrop-blur-sm w-full sm:w-auto transition-all hover:scale-105">
+              <Button asChild size="lg" variant="outline" className="h-12 sm:h-16 px-6 sm:px-10 rounded-full text-base sm:text-lg border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white backdrop-blur-sm w-full sm:w-auto transition-all hover:scale-105">
                 <Link href="#features">
                   Watch Demo
                 </Link>

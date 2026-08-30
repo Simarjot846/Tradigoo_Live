@@ -20,7 +20,8 @@ export async function POST(req: Request) {
             const pathwayRes = await fetch('http://localhost:8080/v1/retrieve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query, k: 3 })
+                body: JSON.stringify({ query: query, k: 3 }),
+                signal: AbortSignal.timeout(1500)
             });
             if (pathwayRes.ok) {
                 liveContext = await pathwayRes.json();

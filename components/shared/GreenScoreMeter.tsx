@@ -24,9 +24,9 @@ export default function GreenScoreMeter() {
             }
         };
 
-        // Fetch immediately and poll
+        // Fetch immediately and poll with reasonable 15s interval
         fetchPathwayStats();
-        const interval = setInterval(fetchPathwayStats, 2000);
+        const interval = setInterval(fetchPathwayStats, 15000);
 
         return () => {
             isMounted = false;

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,50 +21,68 @@ export default function SignupPage() {
     role: 'retailer' as UserRole
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signUp, signInWithGoogle } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { user, loading: authLoading, signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '/dashboard';
+
+  // If user is already authenticated, forward to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(redirectTarget);
+    }
+  }, [user, authLoading, router, redirectTarget]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       await signUp(formData.email, formData.password, formData);
-      router.push('/dashboard');
+      router.push(redirectTarget);
     } catch (err: unknown) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create account';
       setError(errorMessage);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <AuthLayout heroContent={
       <>
-        <h1 className="text-5xl font-bold text-white mb-6 tracking-tight leading-tight">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6">
+          Direct Wholesale Marketplace
+        </div>
+        <h1 className="text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">
           Grow your <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">Business</span> today.
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">Business</span> today.
         </h1>
-        <p className="text-zinc-400 text-lg leading-relaxed mb-8">
-          Join Tradigoo to access wholesale prices directly from manufacturers.
-          Scale your retail business with better margins.
+        <p className="text-zinc-400 text-base leading-relaxed mb-8">
+          Join Tradigoo to access wholesale inventory directly from verified suppliers. Scale your business with transparent margins and automated escrow protection.
         </p>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className={`w-8 h-8 rounded-full border-2 border-zinc-900 bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-[10px] text-white font-bold`}>
-                  U{i}
-                </div>
-              ))}
+        <div className="space-y-3.5">
+          <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 text-base">
+              🤝
             </div>
-            <div className="text-zinc-300 text-sm">
-              <span className="text-white font-bold">2,000+</span> retailers joined this week
+            <div>
+              <div className="text-white text-sm font-semibold">Direct Sourcing</div>
+              <div className="text-zinc-400 text-xs mt-0.5">Eliminate middleman markups and buy directly from source suppliers.</div>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 text-base">
+              🔒
+            </div>
+            <div>
+              <div className="text-white text-sm font-semibold">Protected Escrow</div>
+              <div className="text-zinc-400 text-xs mt-0.5">Zero payment risk with automated multi-tier release and dispute resolution.</div>
             </div>
           </div>
         </div>
@@ -202,9 +220,9 @@ export default function SignupPage() {
           <Button
             type="submit"
             className="w-full h-11 bg-zinc-900 hover:bg-zinc-800 text-white shadow-lg shadow-zinc-500/20"
-            disabled={loading}
+            disabled={submitting}
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {submitting ? 'Creating Account...' : 'Create Account'}
           </Button>
 
           <div className="relative my-4">

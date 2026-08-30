@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 
 const PATHWAY_API = process.env.PATHWAY_API_URL || 'http://localhost:8081';
 
+let cachedStats: { data: any; timestamp: number } | null = null;
+const CACHE_TTL_MS = 60 * 1000;
+
 export async function GET() {
+    if (cachedStats && Date.now() - cachedStats.timestamp < CACHE_TTL_MS) {
+        return NextResponse.json(cachedStats.data);
+    }
+
     try {
         const res = await fetch(`${PATHWAY_API}/global-stats`, { 
-            next: { revalidate: 0 },
-            signal: AbortSignal.timeout(3000),
+            signal: AbortSignal.timeout(600),
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -17,27 +23,21 @@ export async function GET() {
         }
 
         const data = await res.json();
-        
-        // Ensure data is in array format
-        if (Array.isArray(data)) {
-            return NextResponse.json(data);
-        } else {
-            return NextResponse.json([data]);
-        }
-    } catch (error) {
-        console.error('Pathway stats error:', error);
-        
-        // Return mock data as fallback
+        const payload = Array.isArray(data) ? data : [data];
+        cachedStats = { data: payload, timestamp: Date.now() };
+        return NextResponse.json(payload);
+    } catch {
+        // Return baseline mock data as fallback
         const mockData = [{
             total_carbon_saved: Math.floor(400 + Math.random() * 100),
             active_orders: Math.floor(50 + Math.random() * 30),
             green_score_avg: Math.floor(85 + Math.random() * 10),
             timestamp: new Date().toISOString()
         }];
+        cachedStats = { data: mockData, timestamp: Date.now() };
         return NextResponse.json(mockData);
     }
 }
 
-// Enable dynamic rendering for real-time data
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

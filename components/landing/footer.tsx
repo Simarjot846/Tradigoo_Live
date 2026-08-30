@@ -4,9 +4,9 @@ import React from 'react';
 
 export function Footer() {
     return (
-        <footer className="border-t border-black/5 dark:border-white/10 py-20 bg-gray-50 dark:bg-black">
-            <div className="container mx-auto px-6 max-w-7xl">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
+        <footer className="border-t border-black/5 dark:border-white/10 py-10 sm:py-20 bg-gray-50 dark:bg-black">
+            <div className="container mx-auto px-3 sm:px-6 max-w-7xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 mb-10 sm:mb-16">
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2 mb-6">
                             <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg text-white">T</div>

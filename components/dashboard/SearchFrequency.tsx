@@ -31,8 +31,8 @@ export default function SearchFrequency() {
         // Delay initial fetch
         initialTimeout = setTimeout(fetchStats, 1000);
         
-        // Reduced frequency from 3s to 10s
-        const interval = setInterval(fetchStats, 10000);
+        // Refresh every 20s
+        const interval = setInterval(fetchStats, 20000);
         
         return () => {
             isMounted = false;

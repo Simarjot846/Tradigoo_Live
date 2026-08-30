@@ -64,60 +64,70 @@ export function AddProductDialog({ children, onProductAdded }: { children: React
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
+            <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md max-h-[88vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Add New Product</DialogTitle>
+                    <DialogTitle className="text-lg sm:text-xl">Add New Product</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
+                <form onSubmit={handleSubmit} className="grid gap-4 py-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="space-y-1.5">
                             <label className="text-xs text-zinc-400 font-medium ml-1">Product Name</label>
                             <Input
                                 placeholder="e.g. Cotton Shirt"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
+                                className="h-11 bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
                                 required
                             />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                             <label className="text-xs text-zinc-400 font-medium ml-1">Price (₹)</label>
                             <Input
                                 placeholder="0.00"
                                 type="number"
                                 value={formData.base_price}
                                 onChange={e => setFormData({ ...formData, base_price: e.target.value })}
-                                className="bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
+                                className="h-11 bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
                                 required
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="space-y-1.5">
                             <label className="text-xs text-zinc-400 font-medium ml-1">Category</label>
                             <Input
-                                placeholder="e.g. Apparel"
+                                placeholder="e.g. Grains, Spices"
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                className="bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
+                                className="h-11 bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
                                 required
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-xs text-zinc-400 font-medium ml-1">Min Qty</label>
+                        <div className="space-y-1.5">
+                            <label className="text-xs text-zinc-400 font-medium ml-1">Min Order Qty</label>
                             <Input
                                 placeholder="1"
                                 type="number"
                                 value={formData.min_order_quantity}
                                 onChange={e => setFormData({ ...formData, min_order_quantity: e.target.value })}
-                                className="bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
+                                className="h-11 bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
                                 required
                             />
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 mt-2" disabled={loading}>
+                    <div className="space-y-1.5">
+                        <label className="text-xs text-zinc-400 font-medium ml-1">Unit</label>
+                        <Input
+                            placeholder="e.g. kg, piece, quintal"
+                            value={formData.unit}
+                            onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                            className="h-11 bg-zinc-900 border-zinc-800 focus:border-blue-500/50 transition-colors"
+                        />
+                    </div>
+
+                    <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-500 font-bold mt-2" disabled={loading}>
                         {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                         {loading ? "Saving..." : "Save Product"}
                     </Button>

@@ -32,7 +32,16 @@ interface TrendingData {
     last_update: string;
 }
 
-export default function LiveSearchTrends() {
+// Configuration flag: Set to true when connected to real production search traffic
+const IS_LIVE_DATA_CONNECTED = false;
+
+interface LiveSearchTrendsProps {
+    isLiveDataConnected?: boolean;
+}
+
+export default function LiveSearchTrends({
+    isLiveDataConnected = IS_LIVE_DATA_CONNECTED
+}: LiveSearchTrendsProps = {}) {
     const [liveSearches, setLiveSearches] = useState<SearchEvent[]>([]);
     const [trending, setTrending] = useState<TrendingProduct[]>([]);
     const [searchesPerMinute, setSearchesPerMinute] = useState(0);
@@ -42,8 +51,6 @@ export default function LiveSearchTrends() {
 
     useEffect(() => {
         let isMounted = true;
-        let searchTimeout: NodeJS.Timeout;
-        let trendingTimeout: NodeJS.Timeout;
 
         const fetchLiveSearches = async () => {
             try {
@@ -81,21 +88,20 @@ export default function LiveSearchTrends() {
         };
 
         // Initial fetch with delay to not block initial render
-        searchTimeout = setTimeout(() => {
+        const searchTimeout = setTimeout(() => {
             fetchLiveSearches();
             fetchTrending();
         }, 500);
 
-        // Update live searches every 5 seconds (reduced from 2)
-        const searchInterval = setInterval(fetchLiveSearches, 5000);
+        // Update live searches every 15 seconds
+        const searchInterval = setInterval(fetchLiveSearches, 15000);
         
-        // Update trending every 10 seconds (reduced from 5)
-        const trendingInterval = setInterval(fetchTrending, 10000);
+        // Update trending every 30 seconds
+        const trendingInterval = setInterval(fetchTrending, 30000);
 
         return () => {
             isMounted = false;
             clearTimeout(searchTimeout);
-            clearTimeout(trendingTimeout);
             clearInterval(searchInterval);
             clearInterval(trendingInterval);
         };
@@ -157,7 +163,14 @@ export default function LiveSearchTrends() {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <Activity className={`w-6 h-6 text-purple-500 ${isUpdating ? 'animate-pulse' : ''}`} />
-                        <h2 className="text-2xl font-bold dark:text-white">Live Search Activity</h2>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-2xl font-bold dark:text-white">Live Search Activity</h2>
+                            {!isLiveDataConnected && (
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs font-semibold px-2 py-0.5">
+                                    PREVIEW
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {isUpdating && (
@@ -165,13 +178,15 @@ export default function LiveSearchTrends() {
                         )}
                         <Badge variant="outline" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
                             <Activity className="w-3 h-3 mr-1" /> 
-                            {lastUpdateTime || 'Live Stream'}
+                            {lastUpdateTime || (isLiveDataConnected ? 'Live Stream' : 'Sample Feed')}
                         </Badge>
                     </div>
                 </div>
                 
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-                    Real-time product searches from buyers across India • Updates every 2 seconds via Pathway
+                    {isLiveDataConnected
+                        ? 'Real-time product searches from buyers across India • Updates every 2 seconds via Pathway'
+                        : 'Illustrative demo data — live activity coming soon'}
                 </p>
 
                 {/* Stats Bar */}
@@ -218,7 +233,7 @@ export default function LiveSearchTrends() {
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl">{getProductEmoji(item.product)}</span>
                                         <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
-                                            {item.product}
+                                             {item.product}
                                         </h4>
                                     </div>
                                     {getTrendIcon(item.trend)}
@@ -258,8 +273,12 @@ export default function LiveSearchTrends() {
                         {liveSearches.length === 0 ? (
                             <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                                 <Activity className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                                <p className="text-sm">Waiting for live searches...</p>
-                                <p className="text-xs mt-1">Make sure Pathway backend is running</p>
+                                <p className="text-sm">
+                                    {isLiveDataConnected ? 'Waiting for live searches...' : 'Loading sample search activity...'}
+                                </p>
+                                <p className="text-xs mt-1">
+                                    {isLiveDataConnected ? 'Make sure Pathway backend is running' : 'Demo stream initializing'}
+                                </p>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -302,18 +321,22 @@ export default function LiveSearchTrends() {
                 <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center justify-between">
                         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Powered by Pathway Real-Time Streaming • Updates every 5 seconds
+                            {isLiveDataConnected
+                                ? 'Powered by Pathway Real-Time Streaming • Updates every 5 seconds'
+                                : 'Simulated activity for preview purposes'}
                         </p>
                         {liveSearches.length === 0 && (
                             <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
                                 <span className="inline-block w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-                                Waiting for Pathway backend...
+                                {isLiveDataConnected ? 'Waiting for Pathway backend...' : 'Initializing preview stream...'}
                             </p>
                         )}
                         {liveSearches.length > 0 && (
                             <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
                                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-                                Connected • {liveSearches.length} searches tracked
+                                {isLiveDataConnected
+                                    ? `Connected • ${liveSearches.length} searches tracked`
+                                    : `Preview Mode • ${liveSearches.length} sample searches loaded`}
                             </p>
                         )}
                     </div>

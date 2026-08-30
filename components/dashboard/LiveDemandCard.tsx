@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, TrendingDown, Info, Leaf, Zap, Award, Activity } from 'lucide-react';
 
 // Custom tooltip with clear explanations
-const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         const value = payload[0].value as number;
         const time = payload[0].payload.time;
@@ -110,8 +110,8 @@ export default function LiveDemandCard({ children }: { children?: React.ReactNod
         // Delay initial fetch
         initialTimeout = setTimeout(fetchPathwayStats, 500);
         
-        // Fetch every 5 seconds (reduced from 3 for better performance)
-        const interval = setInterval(fetchPathwayStats, 5000);
+        // Fetch every 15 seconds
+        const interval = setInterval(fetchPathwayStats, 15000);
 
         return () => {
             isMounted = false;

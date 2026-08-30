@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -9,75 +9,67 @@ import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
 
+import { useSearchParams } from 'next/navigation';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { user, loading: authLoading, signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '/dashboard';
+
+  // If user is already authenticated, forward to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(redirectTarget);
+    }
+  }, [user, authLoading, router, redirectTarget]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setSubmitting(true);
 
     try {
-      const user = await signIn(email, password);
-
-      if (user?.role === 'wholesaler') {
-        router.push('/wholesaler/dashboard');
-      } else if (user?.role === 'retailer') {
-        router.push('/retailer/marketplace');
-      } else {
-        router.push('/dashboard');
-      }
-
+      await signIn(email, password);
+      router.push(redirectTarget);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Invalid email or password');
-      setLoading(false);
-    } finally {
-      // Don't set loading to false if we are redirecting, to prevent flash of content
-      // But since router.push is async, we might want to keep it loading.
+      setError(err?.message || 'Invalid email or password. Please check your credentials.');
+      setSubmitting(false);
     }
   };
 
   return (
     <AuthLayout>
-      <div className="mb-8 text-center lg:text-left">
-        <Link href="/" className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 mb-8 transition-colors">
+      <div className="mb-6 text-center lg:text-left">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-6 transition-colors">
           ← Back to home
         </Link>
-        <div
-          
-          
-          
-        >
-          <div className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 mx-auto lg:mx-0 shadow-lg">
+        <div>
+          <div className="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mb-5 mx-auto lg:mx-0 shadow-lg shadow-blue-500/20">
             <span className="text-white font-bold text-xl">T</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Welcome back</h1>
-          <p className="text-zinc-500">Enter your details to access your account.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-2">Welcome back</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">Enter your credentials to access your Tradigoo dashboard.</p>
         </div>
       </div>
 
-      <div
-        
-        
-        
-        className="space-y-6"
-      >
+      <div className="space-y-5">
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
-            {error}
+          <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm border border-red-200 dark:border-red-900/50 flex items-start gap-2.5">
+            <span className="text-base">⚠️</span>
+            <span className="leading-snug">{error}</span>
           </div>
         )}
 
         <Button
           type="button"
           onClick={() => signInWithGoogle()}
-          className="w-full bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 h-11 font-medium shadow-sm transition-all"
+          className="w-full bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-11 font-medium shadow-sm hover:shadow transition-all"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path
@@ -100,32 +92,32 @@ export default function LoginPage() {
           Sign in with Google
         </Button>
 
-        <div className="relative">
+        <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-zinc-200" />
+            <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-zinc-400">Or continue with</span>
+          <div className="relative flex justify-center text-xs uppercase font-medium">
+            <span className="bg-white dark:bg-zinc-950 px-3 text-zinc-400">Or continue with email</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-700">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold uppercase tracking-wider">Email Address</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
-              className="h-11 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+              className="h-11 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder:text-zinc-400 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-all"
               required
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-zinc-700">Password</Label>
+              <Label htmlFor="password" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold uppercase tracking-wider">Password</Label>
               <Link href="/auth/forgot-password" className="text-xs text-blue-600 hover:text-blue-500 font-medium">
                 Forgot password?
               </Link>
@@ -136,23 +128,23 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="h-11 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+              className="h-11 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder:text-zinc-400 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-all"
               required
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full h-11 bg-zinc-900 hover:bg-zinc-800 text-white shadow-lg shadow-zinc-500/20"
-            disabled={loading}
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-600/20 hover:shadow-lg transition-all"
+            disabled={submitting}
           >
-            {loading ? 'Logging in...' : 'Sign in'}
+            {submitting ? 'Signing in...' : 'Sign in to Dashboard'}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-zinc-600">
+        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
           Don't have an account?{' '}
-          <Link href="/auth/signup" className="text-blue-600 hover:text-blue-500 font-medium hover:underline">
+          <Link href="/auth/signup" className="text-blue-600 hover:text-blue-500 font-semibold hover:underline">
             Sign up for free
           </Link>
         </p>

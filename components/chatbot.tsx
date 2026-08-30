@@ -120,7 +120,7 @@ export function Chatbot() {
             )}
 
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 w-[380px] rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl flex flex-col overflow-hidden"
+                <div className="fixed inset-x-3 bottom-3 sm:bottom-6 sm:right-6 sm:inset-x-auto sm:w-[380px] z-50 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"
                     style={{ height: isMinimized ? 'auto' : '500px' }}>
                     {/* Header */}
                     <div className="p-4 bg-zinc-800 flex items-center justify-between border-b border-zinc-700 cursor-pointer" onClick={() => !isMinimized && setIsMinimized(!isMinimized)}>
