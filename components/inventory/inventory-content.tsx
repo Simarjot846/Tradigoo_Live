@@ -39,9 +39,11 @@ export default function InventoryContent({ initialProducts }: InventoryContentPr
         setLoading(false);
     };
 
-    // We don't need  fetch effect anymore since we get data from props
-    // But we might want to re-fetch if user changes (though usually page reloads)
-    // Keeping it simple for now, relying on Server Component data.
+    useEffect(() => {
+        if (user) {
+            fetchProducts();
+        }
+    }, [user]);
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this product?")) return;

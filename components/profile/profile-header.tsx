@@ -89,10 +89,10 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
     };
 
     return (
-        <div className="relative rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 p-8 backdrop-blur-xl overflow-hidden mb-8 shadow-sm dark:shadow-none transition-colors duration-300">
+        <div className="relative rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 p-4 sm:p-8 backdrop-blur-xl overflow-hidden mb-8 shadow-sm dark:shadow-none transition-colors duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 pointer-events-none" />
 
-            <div className="relative flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+            <div className="relative flex flex-col md:flex-row gap-6 sm:gap-8 items-center md:items-start text-center md:text-left w-full min-w-0">
                 {/* Avatar Section */}
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full blur opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -116,10 +116,10 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
                 </div>
 
                 {/* Info Section */}
-                <div className="flex-1 space-y-4">
-                    <div>
-                        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-2">
-                            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">{profile.business_name}</h1>
+                <div className="flex-1 space-y-3 sm:space-y-4 min-w-0 w-full">
+                    <div className="min-w-0">
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-3 sm:gap-4 mb-2">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight truncate max-w-full">{profile.business_name}</h1>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger>
@@ -138,10 +138,10 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <div className="flex flex-wrap text-zinc-500 dark:text-neutral-400 items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm">
-                            <div className="flex items-center gap-2">
-                                <span className="text-zinc-700 dark:text-zinc-100 font-medium">{profile.name}</span>
-                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Owner</span>
+                        <div className="flex flex-wrap text-zinc-500 dark:text-neutral-400 items-center justify-center md:justify-start gap-x-4 gap-y-2 text-sm">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-zinc-700 dark:text-zinc-100 font-medium truncate max-w-[140px] sm:max-w-none">{profile.name}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 shrink-0">Owner</span>
                             </div>
                             {profile.business_type && (
                                 <div className="flex items-center gap-1.5">

@@ -228,19 +228,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      const isNative = Capacitor.isNativePlatform();
 
-    if (error) throw error;
+      // On native Capacitor, use the app's deep link URL as redirect
+      // This keeps auth inside the app instead of opening external browser
+      const redirectTo = isNative
+        ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://tradigoo-production.up.railway.app'}/auth/callback`
+        : `${window.location.origin}/auth/callback`;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          // On native, skip browser open — Supabase will use in-app WebView
+          ...(isNative && { skipBrowserRedirect: false }),
+        },
+      });
+
+      if (error) throw error;
+    } catch (importErr) {
+      // Fallback for web
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    }
   };
 
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
     setLoading(true);
     try {
+      // Pre-check: look up if email already exists in profiles to give friendly error
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email.trim().toLowerCase())
+        .maybeSingle();
+
+      if (existingUser) {
+        setLoading(false);
+        throw new Error('This email is already registered. Please log in instead.');
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -256,6 +290,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
+        // Map Supabase duplicate email error to user-friendly message
+        const msg = error.message?.toLowerCase() || '';
+        if (msg.includes('already registered') || msg.includes('user already exists') || msg.includes('email already')) {
+          setLoading(false);
+          throw new Error('This email is already registered. Please log in instead.');
+        }
         const response = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

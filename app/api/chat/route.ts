@@ -62,7 +62,7 @@ ${context}`;
         if (groqApiKey && groqApiKey.trim()) {
             try {
                 const { text, modelUsed } = await generateGroqCompletion(groqMessages, {
-                    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+                    model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
                     temperature: 0.3,
                     max_tokens: 1024,
                 });

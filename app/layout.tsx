@@ -25,10 +25,14 @@ const geistMono = Geist_Mono({
 });
 
 
+import { CapacitorInitializer } from "@/components/capacitor-initializer";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -60,6 +64,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <ErrorSuppression />
+              <CapacitorInitializer />
               <CartProvider>
                 <RoleThemeProvider>
                   <Suspense fallback={<div className="h-[72px] w-full bg-white dark:bg-[#0a0a0a]" />}>

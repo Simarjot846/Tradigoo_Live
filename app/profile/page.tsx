@@ -48,7 +48,7 @@ function ProfileContent() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-zinc-950 to-zinc-950 hidden dark:block" />
             </div>
 
-            <main className="relative z-10 container mx-auto px-6 py-10 max-w-5xl">
+            <div className="relative z-10 container mx-auto px-4 sm:px-6 py-6 sm:py-10 max-w-5xl">
                 <div>
                     <ProfileHeader profile={currentProfile} onUpdate={fetchProfile} />
                     <ProfileTabs profile={currentProfile} onUpdate={fetchProfile} />
@@ -73,7 +73,7 @@ function ProfileContent() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

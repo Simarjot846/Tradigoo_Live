@@ -12,7 +12,8 @@ export interface GroqChatOptions {
 
 /**
  * Groq OpenAI-Compatible Chat Completion Helper
- * Primary Model: llama-3.3-70b-versatile (high quality reasoning, 128k context, ~250-300 tokens/s)
+ * Primary Model: llama-3.1-70b-versatile (stable, widely available)
+ * Secondary: llama-3.3-70b-versatile (newer, may not be available on all plans)
  * Fallback Model: llama-3.1-8b-instant (ultra-low latency, ~800 tokens/s)
  */
 export async function generateGroqCompletion(
@@ -26,8 +27,15 @@ export async function generateGroqCompletion(
         throw err;
     }
 
-    const primaryModel = options.model || process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
-    const fallbackModel = 'llama-3.1-8b-instant';
+    // Model priority: env override → llama-3.1-70b → llama-3.3-70b → llama-3.1-8b-instant
+    const requestedModel = options.model || process.env.GROQ_MODEL || 'llama-3.1-70b-versatile';
+    const modelChain = [
+        requestedModel,
+        'llama-3.1-70b-versatile',
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant',
+    ].filter((m, i, arr) => arr.indexOf(m) === i); // deduplicate
+
     const timeoutMs = options.timeoutMs || 12000;
 
     const callApi = async (modelName: string) => {
@@ -64,6 +72,7 @@ export async function generateGroqCompletion(
             const errData = await response.json().catch(() => ({}));
             const err: any = new Error(errData?.error?.message || `Groq API error HTTP ${response.status}`);
             err.status = response.status;
+            err.isModelError = errData?.error?.type === 'invalid_request_error' || response.status === 404;
             throw err;
         }
 
@@ -76,14 +85,22 @@ export async function generateGroqCompletion(
         return { text: content.trim(), modelUsed: modelName };
     };
 
-    try {
-        return await callApi(primaryModel);
-    } catch (err: any) {
-        // If 70B model is temporarily rate-limited, automatically fall back to 8B instant model
-        if (err.status === 429 && primaryModel !== fallbackModel) {
-            console.warn(`Groq ${primaryModel} 429 rate limit hit. Retrying with ${fallbackModel}...`);
-            return await callApi(fallbackModel);
+    // Try each model in the chain, falling back on model-not-found or rate-limit errors
+    let lastError: any;
+    for (const model of modelChain) {
+        try {
+            return await callApi(model);
+        } catch (err: any) {
+            lastError = err;
+            // Don't try next model if it's an auth error
+            if (err.status === 401) throw err;
+            // Try next model on rate limit or model-not-found
+            if (err.status === 429 || err.isModelError || err.status === 404) {
+                console.warn(`Groq model "${model}" unavailable (${err.status}), trying next...`);
+                continue;
+            }
+            throw err;
         }
-        throw err;
     }
+    throw lastError;
 }

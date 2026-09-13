@@ -83,14 +83,14 @@ export function Navbar() {
   return (
     <div className="flex flex-col w-full z-50 sticky top-0 font-sans shadow-xl shadow-zinc-200/50 dark:shadow-none">
       {/* Top Bar */}
-      <nav className="relative bg-white dark:bg-gradient-to-r dark:from-[#0a0a0a] dark:via-[#111111] dark:to-[#0a0a0a] text-zinc-900 dark:text-white px-3 sm:px-4 py-2 sm:py-2.5 flex flex-col justify-center border-b border-zinc-200 dark:border-white/5 transition-colors duration-300 w-full">
+      <nav className="relative bg-white dark:bg-gradient-to-r dark:from-[#0a0a0a] dark:via-[#111111] dark:to-[#0a0a0a] text-zinc-900 dark:text-white px-3 sm:px-4 py-2 sm:py-2.5 pt-safe flex flex-col justify-center border-b border-zinc-200 dark:border-white/5 transition-colors duration-300 w-full">
         <div className="relative z-10 flex items-center justify-between w-full max-w-[1920px] mx-auto gap-2 sm:gap-4">
           
           {/* Mobile Menu Button + Logo */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-300 transition-colors"
+              onPointerDown={(e) => { e.preventDefault(); setIsMobileMenuOpen(true); }}
+              className="md:hidden p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-300 transition-colors active:scale-95 touch-manipulation select-none min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
@@ -264,8 +264,8 @@ export function Navbar() {
       {/* Bottom Bar - Categories & Quick Links (Horizontal Scroll on Mobile) */}
       <div className="relative bg-zinc-50 dark:bg-[#1a1a1a] text-zinc-600 dark:text-zinc-300 px-3 sm:px-4 py-2 flex items-center text-sm gap-4 sm:gap-6 border-b border-zinc-200 dark:border-white/5 overflow-x-auto no-scrollbar shadow-inner">
         <div
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="flex items-center gap-1.5 font-bold cursor-pointer text-zinc-900 dark:text-white px-2 py-1 rounded-md hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors shrink-0"
+          onPointerDown={(e) => { e.preventDefault(); setIsMobileMenuOpen(true); }}
+          className="flex items-center gap-1.5 font-bold cursor-pointer text-zinc-900 dark:text-white px-2 py-1 rounded-md hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors shrink-0 touch-manipulation select-none min-h-[44px]"
         >
           <Menu className="w-4 h-4 sm:w-5 sm:h-5" /> All
         </div>
@@ -327,8 +327,8 @@ export function Navbar() {
                 </div>
               </div>
               <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
+                onPointerDown={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); }}
+                className="p-2.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />

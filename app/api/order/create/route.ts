@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase-server';
+import { createServiceClient, createClient } from '@/lib/supabase-server';
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { buyer_id, seller_id, product_id, quantity, unit_price, total_amount } = body;
+        const { seller_id, product_id, quantity, unit_price, total_amount } = body;
 
-        // Validate input
-        if (!buyer_id) {
-            return NextResponse.json({ error: 'Missing buyer_id' }, { status: 400 });
+        // Get the authenticated user from the session (server-side, secure)
+        const supabaseAuth = await createClient();
+        const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser();
+
+        if (authError || !authUser) {
+            return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
         }
+
+        // Use the authenticated user's ID as buyer_id — never trust client-provided buyer_id
+        const buyer_id = authUser.id;
 
         // Use Service Role Client to bypass RLS
         const supabase = createServiceClient();

@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
-
 export default function ForgotPasswordPage() {
     return (
         <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>}>

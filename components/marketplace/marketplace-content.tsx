@@ -60,10 +60,36 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        if (initialProducts.length < ITEMS_PER_PAGE) {
+        if (initialProducts.length === 0) {
+            fetchInitialProducts();
+        } else if (initialProducts.length < ITEMS_PER_PAGE) {
             setHasMore(false);
         }
     }, [initialProducts]);
+
+    const fetchInitialProducts = async () => {
+        setLoadingProducts(true);
+        try {
+            const supabase = createClient();
+            const { data } = await supabase
+                .from('products')
+                .select('id, name, category, base_price, unit, min_order_quantity, image_url, description, demand_level')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .range(0, ITEMS_PER_PAGE - 1);
+
+            if (data) {
+                setProducts(data);
+                if (data.length < ITEMS_PER_PAGE) {
+                    setHasMore(false);
+                }
+            }
+        } catch (err) {
+            console.error("Initial products fetch error:", err);
+        } finally {
+            setLoadingProducts(false);
+        }
+    };
 
     const loadMore = async () => {
         setLoadingProducts(true);

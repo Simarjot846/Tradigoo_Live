@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 import { UserRole } from '@/lib/supabase';
 
 export default function SignupPage() {
@@ -20,6 +21,7 @@ export default function SignupPage() {
     location: '',
     role: 'retailer' as UserRole
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { user, loading: authLoading, signUp, signInWithGoogle } = useAuth();
@@ -109,8 +111,14 @@ export default function SignupPage() {
         className="space-y-6"
       >
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
-            {error}
+          <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm border border-red-200 dark:border-red-900/50 flex items-start gap-2.5">
+            <span className="text-base shrink-0">⚠️</span>
+            <span className="leading-snug">
+              {error}
+              {(error.toLowerCase().includes('already registered') || error.toLowerCase().includes('already exists')) && (
+                <span> <Link href="/auth/login" className="underline font-semibold text-blue-600 dark:text-blue-400">Log in instead →</Link></span>
+              )}
+            </span>
           </div>
         )}
 
@@ -205,16 +213,28 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-zinc-700">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="••••••••"
-              className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
-              required
-            />
+            <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="••••••••"
+                className="h-10 pr-11 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <Button
