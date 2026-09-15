@@ -255,28 +255,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { Capacitor } = await import('@capacitor/core');
       const isNative = Capacitor.isNativePlatform();
 
-      const redirectTo = isNative
-        ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://tradigoo-production.up.railway.app'}/auth/callback`
-        : `${window.location.origin}/auth/callback`;
+      if (isNative) {
+        // Native Capacitor Flow: Use in-app browser overlay (@capacitor/browser)
+        const { Browser } = await import('@capacitor/browser');
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          ...(isNative && { skipBrowserRedirect: false }),
-        },
-      });
+        // Custom scheme redirect for native app (or fallback live web URL)
+        const redirectTo = 'com.tradigoo.app://auth/callback';
 
-      if (error) throw error;
-    } catch (importErr) {
-      // Fallback for web
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo,
+            skipBrowserRedirect: true,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        if (data?.url) {
+          // Open in-app Chrome Custom Tab overlay window (keeps user inside the app)
+          await Browser.open({
+            url: data.url,
+            windowName: '_self',
+          });
+        }
+      } else {
+        // Web Flow: Standard browser redirect
+        const redirectTo = `${window.location.origin}/auth/callback`;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo,
+          },
+        });
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error('Sign in with Google error:', err);
+      // Web fallback
+      try {
+        const redirectTo = `${window.location.origin}/auth/callback`;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo },
+        });
+        if (error) throw error;
+      } catch (fallbackErr) {
+        throw fallbackErr;
+      }
     }
   };
 
