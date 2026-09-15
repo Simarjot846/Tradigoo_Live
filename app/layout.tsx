@@ -11,6 +11,7 @@ import { ThemePersistence } from "@/components/theme-persistence";
 import { CartProvider } from "@/lib/cart-context";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ErrorSuppression } from "./error-suppression";
+import { SessionRestorer } from "@/components/session-restorer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +56,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* SessionRestorer must be FIRST — kicks off Capacitor storage warm-up
+            immediately so the Supabase client finds the session on every page */}
+        <SessionRestorer />
         <QueryProvider>
           <AuthProvider>
             <ThemeProvider

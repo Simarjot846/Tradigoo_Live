@@ -1,5 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js';
 import { capacitorSupabaseStorage } from './capacitor-storage';
 
 const SUPABASE_URL =
@@ -13,30 +12,31 @@ const SUPABASE_ANON_KEY =
 let browserClient: SupabaseClient | undefined;
 
 /**
- * Returns a singleton Supabase browser client.
+ * Returns a singleton Supabase client.
  *
- * On Capacitor native: uses capacitorSupabaseStorage (backed by @capacitor/preferences)
- * so the session survives app restarts and process kills.
- *
- * On web: uses the default localStorage-based storage.
+ * Uses @supabase/supabase-js directly so that auth.storage (capacitorSupabaseStorage)
+ * is fully respected and persists session data across app restarts, process kills,
+ * and page navigations on both web and Capacitor Android/iOS.
  */
 export function createClient(): SupabaseClient {
   if (typeof window === 'undefined') {
-    // SSR context — create a fresh client without custom storage
-    return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // SSR context — create a lightweight client
+    return createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
   }
 
   if (!browserClient) {
-    browserClient = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    browserClient = createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        // Use our Capacitor-aware storage adapter
         storage: capacitorSupabaseStorage,
-        // Automatically refresh the token before it expires
         autoRefreshToken: true,
-        // Persist session across page reloads / app restarts
         persistSession: true,
-        // Detect session in URL hash (needed for OAuth + magic link callbacks)
         detectSessionInUrl: true,
+        flowType: 'pkce',
       },
     });
   }
@@ -44,8 +44,4 @@ export function createClient(): SupabaseClient {
   return browserClient;
 }
 
-/**
- * Call this once at app start (in CapacitorInitializer) to warm up the
- * native storage cache before the Supabase client reads session data.
- */
 export { warmUpCapacitorStorage } from './capacitor-storage';

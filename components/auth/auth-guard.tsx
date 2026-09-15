@@ -17,11 +17,10 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // If auth state is confirmed resolved (loading=false) and there is definitely no user
+    // Only trigger redirect when loading has definitively completed and there is no user
     if (!loading && !user) {
-      // On native Capacitor, wait longer before redirecting (storage warm-up needs time)
       const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
-      const graceMs = isNative ? 1200 : 400;
+      const graceMs = isNative ? 1000 : 400;
 
       const timer = setTimeout(() => {
         if (!user) {
@@ -35,13 +34,13 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
     }
   }, [user, loading, router, pathname]);
 
-  // Loading state or initial grace check
+  // Loading state
   if (loading || (!user && !redirecting)) {
     return (
       <div className="min-h-screen flex items-center justify-center dark:bg-zinc-950 bg-background">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-          <p className="text-sm text-zinc-500 font-medium">Verifying access...</p>
+          <p className="text-sm text-zinc-500 font-medium">Verifying session...</p>
         </div>
       </div>
     );

@@ -53,7 +53,7 @@ export function Navbar() {
     );
   }
 
-  if (pathname === '/') return null;
+  if (pathname === '/' || pathname.startsWith('/auth')) return null;
 
   const handleSignOut = async () => {
     setIsMobileMenuOpen(false);

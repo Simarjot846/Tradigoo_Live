@@ -1,4 +1,4 @@
-import { createClient, createServiceClient, createClientWithCookieCollector } from '@/lib/supabase-server';
+import { createServiceClient, createClientWithCookieCollector } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -13,22 +13,65 @@ export async function POST(request: Request) {
       );
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     const { supabase, cookieActions } = await createClientWithCookieCollector();
     const supabaseAdmin = createServiceClient();
 
-    // 1. Sign up the user
+    // 1. Strict pre-check: verify email does not exist in profiles table
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, role')
+      .ilike('email', cleanEmail)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return NextResponse.json(
+        { error: 'This email is already registered. Please log in instead.' },
+        { status: 409 }
+      );
+    }
+
+    // 2. Strict pre-check: verify email does not exist in auth.users
+    try {
+      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      if (users && users.some(u => u.email?.toLowerCase() === cleanEmail)) {
+        return NextResponse.json(
+          { error: 'This email is already registered. Please log in instead.' },
+          { status: 409 }
+        );
+      }
+    } catch {}
+
+    // 3. Attempt Supabase signup
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password,
       options: {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://tradigoo-production.up.railway.app'}/auth/callback`,
+        data: {
+          name: userData?.name || '',
+          role: userData?.role || 'retailer',
+          business_name: userData?.business_name || '',
+          phone: userData?.phone || null,
+          location: userData?.location || 'India',
+        }
       },
     });
 
     if (authError) {
+      const msg = (authError.message || '').toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('duplicate')) {
+        return NextResponse.json(
+          { error: 'This email is already registered. Please log in instead.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { error: authError.message },
-        { status: 400 } // Or appropriate auth error status
+        { status: 400 }
       );
     }
 
@@ -39,31 +82,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if profile already exists to avoid SQL errors or duplicates
-    const { data: existingProfile } = await supabaseAdmin
-      .from('profiles')
-      .select('id')
-      .eq('id', authData.user.id)
-      .single();
-
-    if (existingProfile) {
+    // 4. Supabase anti-enumeration check: empty identities means email was already registered
+    if (authData.user.identities && authData.user.identities.length === 0) {
       return NextResponse.json(
-        { error: 'User already registered with this email' },
+        { error: 'This email is already registered. Please log in instead.' },
         { status: 409 }
       );
     }
 
-    // 2. Create the user profile using Service Role (bypassing RLS)
+    // 5. Create user profile using Service Role (bypasses RLS)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert({
         id: authData.user.id,
-        email: authData.user.email!,
-        role: userData.role || 'retailer',
-        name: userData.name || '',
-        phone: userData.phone || null,
-        business_name: userData.business_name || '',
-        location: userData.location || 'India',
+        email: cleanEmail,
+        role: userData?.role || 'retailer',
+        name: userData?.name || cleanEmail.split('@')[0],
+        phone: userData?.phone || null,
+        business_name: userData?.business_name || '',
+        location: userData?.location || 'India',
         trust_score: 500,
         total_orders: 0,
         successful_orders: 0,
@@ -72,22 +109,25 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error('Profile creation error:', profileError);
-      // Optional: Delete the auth user if profile creation fails to maintain consistency
-      // await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-
+      const profileMsg = (profileError.message || '').toLowerCase();
+      if (profileMsg.includes('unique') || profileMsg.includes('duplicate') || profileMsg.includes('profiles_email')) {
+        return NextResponse.json(
+          { error: 'This email is already registered. Please log in instead.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { error: 'Failed to create user profile' },
         { status: 500 }
       );
     }
 
-    // Build response and apply cookies recorded by the Supabase client
+    // 6. Build response with cookie actions
     const response = NextResponse.json({
       user: authData.user,
       message: 'Account created successfully'
     });
 
-    // Apply any Set-Cookie actions collected during the signup call
     if (cookieActions && cookieActions.length) {
       for (const action of cookieActions) {
         try {
@@ -97,7 +137,6 @@ export async function POST(request: Request) {
             ...(action.options || {}),
           });
         } catch (e) {
-          // ignore cookie set failures but log in case of debugging
           console.warn('Failed to apply cookie action', action.name, e);
         }
       }

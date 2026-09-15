@@ -24,17 +24,36 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user, loading: authLoading, signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect') || '/dashboard';
 
-  // If user is already authenticated, forward to dashboard
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // If user is already authenticated, forward immediately
   useEffect(() => {
     if (!authLoading && user) {
       router.replace(redirectTarget);
     }
   }, [user, authLoading, router, redirectTarget]);
+
+  // If loading or already logged in, show clean loader — NEVER show signup form to an authenticated user
+  if (!mounted || authLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-zinc-500 font-medium">
+            {user ? 'Redirecting to dashboard...' : 'Loading Tradigoo...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,129 +110,134 @@ export default function SignupPage() {
       </>
     }>
       <div className="mb-4 text-center lg:text-left">
-        <Link href="/" className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 mb-6 transition-colors">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-6 transition-colors">
           ← Back to home
         </Link>
-        <div
-          
-          
-          
-        >
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 mb-2">Create an account</h1>
-          <p className="text-zinc-500">Choose your role to get started.</p>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-2">Create an account</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">Choose your business role to get started.</p>
         </div>
       </div>
 
-      <div
-        
-        
-        
-        className="space-y-6"
-      >
+      <div className="space-y-5">
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm border border-red-200 dark:border-red-900/50 flex items-start gap-2.5">
-            <span className="text-base shrink-0">⚠️</span>
-            <span className="leading-snug">
-              {error}
+          <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm border border-red-200 dark:border-red-900/50 flex items-start gap-3 shadow-sm">
+            <span className="text-lg shrink-0">⚠️</span>
+            <div className="leading-snug">
+              <span className="font-semibold block">{error}</span>
               {(error.toLowerCase().includes('already registered') || error.toLowerCase().includes('already exists')) && (
-                <span> <Link href="/auth/login" className="underline font-semibold text-blue-600 dark:text-blue-400">Log in instead →</Link></span>
+                <div className="mt-2">
+                  <Link
+                    href="/auth/login"
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+                  >
+                    Go to Login Page →
+                  </Link>
+                </div>
               )}
-            </span>
+            </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Role Selection */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setFormData({ ...formData, role: 'retailer' })}
-              className={`p-4 border rounded-xl text-left transition-all ${formData.role === 'retailer'
-                  ? 'border-blue-600 bg-blue-50/50 ring-1 ring-blue-600'
-                  : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+              className={`p-3.5 border rounded-xl text-left transition-all ${formData.role === 'retailer'
+                  ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/30 ring-2 ring-blue-600'
+                  : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900'
                 }`}
             >
-              <div className="font-semibold text-zinc-900 mb-1">Retailer</div>
-              <div className="text-xs text-zinc-500">I want to buy products</div>
+              <div className="font-bold text-zinc-900 dark:text-white text-sm mb-0.5 flex items-center justify-between">
+                Retailer
+                {formData.role === 'retailer' && <span className="text-blue-600 text-xs font-bold">✓</span>}
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Buy products</div>
             </button>
+
             <button
               type="button"
               onClick={() => setFormData({ ...formData, role: 'wholesaler' })}
-              className={`p-4 border rounded-xl text-left transition-all ${formData.role === 'wholesaler'
-                  ? 'border-green-600 bg-green-50/50 ring-1 ring-green-600'
-                  : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+              className={`p-3.5 border rounded-xl text-left transition-all ${formData.role === 'wholesaler'
+                  ? 'border-emerald-600 bg-emerald-50/60 dark:bg-emerald-950/30 ring-2 ring-emerald-600'
+                  : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900'
                 }`}
             >
-              <div className="font-semibold text-zinc-900 mb-1">Wholesaler</div>
-              <div className="text-xs text-zinc-500">I want to sell products</div>
+              <div className="font-bold text-zinc-900 dark:text-white text-sm mb-0.5 flex items-center justify-between">
+                Wholesaler
+                {formData.role === 'wholesaler' && <span className="text-emerald-600 text-xs font-bold">✓</span>}
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Sell products</div>
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-zinc-700">Full Name</Label>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Full Name</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="John Doe"
-                className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+                className="h-10 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-zinc-700">Phone</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Phone</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+91 98765 43210"
-                className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+                className="h-10 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="business_name" className="text-zinc-700">Business Name</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="business_name" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Business Name</Label>
             <Input
               id="business_name"
               value={formData.business_name}
               onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
               placeholder="Your Business Name"
-              className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+              className="h-10 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location" className="text-zinc-700">Location</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="location" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Location</Label>
             <Input
               id="location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               placeholder="City, State"
-              className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+              className="h-10 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-700">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Email Address</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="name@example.com"
-              className="h-10 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+              className="h-10 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300">Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -221,7 +245,7 @@ export default function SignupPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="h-10 pr-11 bg-zinc-50 border-zinc-200 focus:bg-white transition-colors"
+                className="h-10 pr-11 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white"
                 required
                 minLength={6}
               />
@@ -239,26 +263,26 @@ export default function SignupPage() {
 
           <Button
             type="submit"
-            className="w-full h-11 bg-zinc-900 hover:bg-zinc-800 text-white shadow-lg shadow-zinc-500/20"
+            className="w-full h-11 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-100 text-white font-semibold shadow-md shadow-zinc-500/20"
             disabled={submitting}
           >
             {submitting ? 'Creating Account...' : 'Create Account'}
           </Button>
 
-          <div className="relative my-4">
+          <div className="relative my-3">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-zinc-200" />
+              <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-zinc-400">Or continue with</span>
+            <div className="relative flex justify-center text-xs uppercase font-medium">
+              <span className="bg-white dark:bg-zinc-950 px-3 text-zinc-400">Or continue with</span>
             </div>
           </div>
 
           <Button
             type="button"
-            onClick={() => signInWithGoogle()}
+            onClick={() => signInWithGoogle(formData.role)}
             variant="outline"
-            className="w-full bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 h-11 font-medium shadow-sm transition-all"
+            className="w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-11 font-medium shadow-sm transition-all"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
@@ -278,14 +302,13 @@ export default function SignupPage() {
                 fill="#EA4335"
               />
             </svg>
-            Sign up with Google
+            Sign up with Google as {formData.role === 'wholesaler' ? 'Wholesaler' : 'Retailer'}
           </Button>
-
         </form>
 
-        <p className="text-center text-sm text-zinc-600">
+        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 pt-2">
           Already have an account?{' '}
-          <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-medium hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-semibold hover:underline">
             Log in
           </Link>
         </p>

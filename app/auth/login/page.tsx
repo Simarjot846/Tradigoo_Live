@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-
 import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
@@ -24,19 +23,29 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect') || '/dashboard';
 
-  // Prevent flicker — only render form after mount
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // If user is already authenticated, forward to dashboard
+  // If user is already authenticated, forward immediately
   useEffect(() => {
     if (!authLoading && user) {
       router.replace(redirectTarget);
     }
   }, [user, authLoading, router, redirectTarget]);
 
-  // Don't render form until mounted to avoid hydration flicker
-  if (!mounted) {
-    return <AuthLayout><div className="h-96 animate-pulse bg-zinc-100 dark:bg-zinc-900 rounded-2xl" /></AuthLayout>;
+  // If still checking auth or already logged in, show clean loader — NEVER show login form to an authenticated user
+  if (!mounted || authLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-zinc-500 font-medium">
+            {user ? 'Redirecting to dashboard...' : 'Loading Tradigoo...'}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +58,20 @@ export default function LoginPage() {
       router.push(redirectTarget);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Invalid email or password. Please check your credentials.');
+      const msg = (err?.message || '').toLowerCase();
+      if (
+        msg.includes('invalid login credentials') ||
+        msg.includes('invalid credentials') ||
+        msg.includes('email not confirmed')
+      ) {
+        setError(
+          'Invalid email or password. If you originally registered using Google, please click "Sign in with Google" below.'
+        );
+      } else if (msg.includes('email') && msg.includes('not found')) {
+        setError('No account found with this email. Please sign up first.');
+      } else {
+        setError(err?.message || 'Invalid email or password. Please check your credentials.');
+      }
       setSubmitting(false);
     }
   };
@@ -72,7 +94,7 @@ export default function LoginPage() {
       <div className="space-y-5">
         {error && (
           <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm border border-red-200 dark:border-red-900/50 flex items-start gap-2.5">
-            <span className="text-base">⚠️</span>
+            <span className="text-base shrink-0">⚠️</span>
             <span className="leading-snug">{error}</span>
           </div>
         )}
@@ -164,7 +186,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 pt-2">
           Don't have an account?{' '}
           <Link href="/auth/signup" className="text-blue-600 hover:text-blue-500 font-semibold hover:underline">
             Sign up for free

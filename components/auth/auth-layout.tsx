@@ -69,8 +69,12 @@ export function AuthLayout({ children, heroContent }: AuthLayoutProps) {
             </div>
 
             {/* Right Panel - Form Section (Full width on mobile, comfortable padding) */}
-            <div className="w-full lg:w-1/2 bg-white dark:bg-zinc-950 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative min-h-screen">
-                <div className="w-full max-w-md space-y-6 sm:space-y-8">
+            <div className="w-full lg:w-1/2 bg-white dark:bg-zinc-950 flex items-start lg:items-center justify-center p-4 sm:p-8 lg:p-12 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] relative min-h-screen overflow-y-auto">
+                {/* Ensures content is never hidden behind Android/iOS system navigation bar or back buttons */}
+                <div
+                    className="w-full max-w-md space-y-6 sm:space-y-8 pt-2 pb-32 sm:pb-12"
+                    style={{ paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 4rem), 6.5rem)' }}
+                >
                     {children}
                 </div>
 

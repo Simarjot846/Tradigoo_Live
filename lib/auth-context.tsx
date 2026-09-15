@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User | null>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (role?: UserRole) => Promise<void>;
   signUp: (email: string, password: string, userData: Partial<User>) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const buildFallbackProfile = useCallback((authUser: SupabaseUser): User => {
     return {
       id: authUser.id,
-      email: authUser.email || 'user@example.com',
+      email: (authUser.email || 'user@example.com').toLowerCase(),
       name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Trader',
       phone: authUser.phone || authUser.user_metadata?.phone || null,
       role: (authUser.user_metadata?.role as UserRole) || 'retailer',
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fallback = buildFallbackProfile(authUser);
     try {
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Profile query timeout')), 2500)
+        setTimeout(() => reject(new Error('Profile query timeout')), 3000)
       );
       const queryPromise = supabase
         .from('profiles')
@@ -59,17 +59,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: profile } = (await Promise.race([queryPromise, timeoutPromise])) as any;
 
       if (!profile) {
-        // Ensure profile row exists in background without blocking
-        supabase.from('profiles').upsert(fallback as any).then(() => {}, () => {});
-        return fallback;
+        // Check if there was a selected role for new OAuth registration
+        let assignedRole: UserRole = fallback.role;
+        try {
+          if (typeof window !== 'undefined') {
+            const pendingRole = localStorage.getItem('tradigoo_pending_oauth_role');
+            if (pendingRole === 'wholesaler' || pendingRole === 'retailer') {
+              assignedRole = pendingRole;
+              localStorage.removeItem('tradigoo_pending_oauth_role');
+            }
+          }
+        } catch {}
+
+        const newProfile = { ...fallback, role: assignedRole };
+        // Insert only if not existing — never overwrite an existing profile
+        supabase.from('profiles').insert(newProfile as any).then(() => {}, () => {});
+        return newProfile;
       }
 
+      // Existing profile found — preserve its role and data strictly
       return {
         ...fallback,
         ...profile,
-        // Preserve essential user identity
         id: authUser.id,
-        email: authUser.email || profile.email || fallback.email,
+        email: (authUser.email || profile.email || fallback.email).toLowerCase(),
       };
     } catch {
       return fallback;
@@ -93,19 +106,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let initialSessionHandled = false;
-
-    // On native Capacitor, allow more time for storage warm-up before declaring no session
-    const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
-    const safetyTimeoutMs = isNative ? 5000 : 2500;
-    const retryDelayMs = isNative ? 800 : 200;
-
-    // Safety timeout: Ensure loading is never stuck
-    const safetyTimer = setTimeout(() => {
-      if (mounted && loading) {
-        setLoading(false);
-      }
-    }, safetyTimeoutMs);
 
     const applyUserSession = async (authUser: SupabaseUser | null) => {
       if (!mounted) return;
@@ -116,12 +116,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Step 1: Set user IMMEDIATELY from in-memory session metadata
+      // 1. Immediately provide authenticated state from session
       const instantProfile = buildFallbackProfile(authUser);
       setUser(instantProfile);
       setLoading(false);
 
-      // Step 2: Asynchronously enrich from database in background
+      // 2. Enrich profile from DB in background
       try {
         const fullProfile = await fetchUserProfile(authUser);
         if (mounted) {
@@ -132,34 +132,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // 1. Initial Session Inspection
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      if (session?.user) {
-        initialSessionHandled = true;
-        applyUserSession(session.user);
-      } else if (!error) {
-        // Grace period for storage warm-up (longer on native)
-        setTimeout(async () => {
-          if (!mounted || initialSessionHandled) return;
-          const retry = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-          if (mounted && !initialSessionHandled) {
-            initialSessionHandled = true;
-            applyUserSession(retry.data?.session?.user || null);
-          }
-        }, retryDelayMs);
-      } else {
-        applyUserSession(null);
-      }
-    }).catch(() => {
-      if (mounted) applyUserSession(null);
-    });
+    const initAuth = async () => {
+      // Step A: Warm up storage cache (Preferences + localStorage)
+      try {
+        const { warmUpCapacitorStorage } = await import('@/lib/supabase-client');
+        await warmUpCapacitorStorage();
+      } catch {}
 
-    // 2. Subscribe to all Supabase Auth State changes
+      if (!mounted) return;
+
+      // Step B: Inspect existing session
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (session?.user) {
+          await applyUserSession(session.user);
+          return;
+        }
+
+        if (!error) {
+          // Secondary attempt with getUser in case token needs refresh
+          const { data: { user: authUser } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+          if (mounted) {
+            if (authUser) {
+              await applyUserSession(authUser);
+            } else {
+              applyUserSession(null);
+            }
+          }
+        } else {
+          applyUserSession(null);
+        }
+      } catch {
+        if (mounted) applyUserSession(null);
+      }
+    };
+
+    initAuth();
+
+    // Step C: Subscribe to all Supabase Auth State changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
-        initialSessionHandled = true;
 
         if (event === 'SIGNED_OUT' || !session?.user) {
           setUser(null);
@@ -179,16 +194,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
       subscription.unsubscribe();
-      clearTimeout(safetyTimer);
     };
   }, [supabase, buildFallbackProfile, fetchUserProfile]);
 
   const signIn = async (email: string, password: string): Promise<User | null> => {
     setLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
     try {
       // 1. Attempt client-side Supabase authentication
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password,
       });
 
@@ -199,7 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email.trim(), password }),
+            body: JSON.stringify({ email: cleanEmail, password }),
           });
           const payload = await res.json();
           if (res.ok && payload.user) {
@@ -209,18 +224,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fetchUserProfile(payload.user).then(p => setUser(p)).catch(() => {});
             return instantProfile;
           }
-        } catch {
-          // If server fallback also fails, propagate error
-        }
+        } catch {}
         throw error;
       }
 
       if (data.user) {
-        // Instantly populate user in memory (0ms) before returning
         const instantProfile = buildFallbackProfile(data.user);
         setUser(instantProfile);
         setLoading(false);
-        // Enrich from DB in background
         fetchUserProfile(data.user).then(p => setUser(p)).catch(() => {});
         return instantProfile;
       }
@@ -233,13 +244,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (role?: UserRole) => {
     try {
+      if (typeof window !== 'undefined' && role) {
+        try {
+          localStorage.setItem('tradigoo_pending_oauth_role', role);
+        } catch {}
+      }
+
       const { Capacitor } = await import('@capacitor/core');
       const isNative = Capacitor.isNativePlatform();
 
-      // On native Capacitor, use the app's deep link URL as redirect
-      // This keeps auth inside the app instead of opening external browser
       const redirectTo = isNative
         ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://tradigoo-production.up.railway.app'}/auth/callback`
         : `${window.location.origin}/auth/callback`;
@@ -248,7 +263,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         provider: 'google',
         options: {
           redirectTo,
-          // On native, skip browser open — Supabase will use in-app WebView
           ...(isNative && { skipBrowserRedirect: false }),
         },
       });
@@ -268,45 +282,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
     setLoading(true);
-    try {
-      // Pre-check: look up if email already exists in profiles to give friendly error
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.trim().toLowerCase())
-        .maybeSingle();
+    const cleanEmail = email.trim().toLowerCase();
 
-      if (existingUser) {
-        setLoading(false);
-        throw new Error('This email is already registered. Please log in instead.');
+    try {
+      // 1. Strict pre-check: verify email uniqueness via server endpoint (bypasses RLS)
+      try {
+        const checkRes = await fetch('/api/auth/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail }),
+        });
+        const checkData = await checkRes.json();
+        if (checkData.exists) {
+          setLoading(false);
+          throw new Error('This email is already registered. Please log in instead.');
+        }
+      } catch (checkErr: any) {
+        if (checkErr.message?.includes('already registered')) {
+          setLoading(false);
+          throw checkErr;
+        }
       }
 
+      // 2. Attempt Supabase Auth signup
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: cleanEmail,
         password,
         options: {
           data: {
-            name: userData.name,
+            name: userData.name || '',
             role: userData.role || 'retailer',
-            business_name: userData.business_name,
-            phone: userData.phone,
-            location: userData.location,
+            business_name: userData.business_name || '',
+            phone: userData.phone || null,
+            location: userData.location || 'India',
           }
         }
       });
 
       if (error) {
-        // Map Supabase duplicate email error to user-friendly message
-        const msg = error.message?.toLowerCase() || '';
+        const msg = (error.message || '').toLowerCase();
         if (msg.includes('already registered') || msg.includes('user already exists') || msg.includes('email already')) {
           setLoading(false);
           throw new Error('This email is already registered. Please log in instead.');
         }
+
+        // Fallback to server API signup route
         const response = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email: email.trim(), password, userData }),
+          body: JSON.stringify({ email: cleanEmail, password, userData }),
         });
         const respData = await response.json();
         if (!response.ok) {
@@ -322,11 +347,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // 3. Supabase anti-enumeration detection: empty identities means email was already registered!
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        setLoading(false);
+        throw new Error('This email is already registered. Please log in instead.');
+      }
+
       if (data.user) {
         const newProfile: User = {
           id: data.user.id,
-          email: data.user.email || email.trim(),
-          name: userData.name || email.split('@')[0],
+          email: cleanEmail,
+          name: userData.name || cleanEmail.split('@')[0],
           role: userData.role || 'retailer',
           business_name: userData.business_name || '',
           phone: userData.phone || null,
@@ -339,7 +370,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updated_at: new Date().toISOString(),
         };
 
-        await supabase.from('profiles').upsert(newProfile as any);
+        // Insert only if not existing
+        await supabase.from('profiles').insert(newProfile as any);
         setUser(newProfile);
       }
       setLoading(false);
@@ -352,25 +384,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
-      // 1. Sign out on client — this clears Supabase session from our custom storage
       await supabase.auth.signOut().catch(() => {});
-      // 2. Sign out on server to clear cookies
       await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => {});
-      // 3. On native, explicitly clear Preferences storage for a clean slate
+
+      // Clear all cached storage
       try {
-        const { Capacitor } = await import('@capacitor/core');
-        if (Capacitor.isNativePlatform()) {
-          const { Preferences } = await import('@capacitor/preferences');
-          const { keys } = await Preferences.keys();
-          await Promise.all(
-            keys
-              .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
-              .map(k => Preferences.remove({ key: k }))
-          );
+        if (typeof window !== 'undefined') {
+          // Clear localStorage
+          for (let i = window.localStorage.length - 1; i >= 0; i--) {
+            const key = window.localStorage.key(i);
+            if (key && (key.startsWith('sb-') || key.startsWith('supabase') || key.startsWith('tradigoo_'))) {
+              window.localStorage.removeItem(key);
+            }
+          }
+
+          // Clear native preferences
+          const { Capacitor } = await import('@capacitor/core');
+          if (Capacitor.isNativePlatform()) {
+            const { Preferences } = await import('@capacitor/preferences');
+            const { keys } = await Preferences.keys();
+            await Promise.all(
+              keys
+                .filter(k => k.startsWith('sb-') || k.startsWith('supabase') || k.startsWith('tradigoo_'))
+                .map(k => Preferences.remove({ key: k }))
+            );
+          }
         }
-      } catch {
-        // Non-critical — Supabase already cleared its own keys
-      }
+      } catch {}
     } finally {
       setUser(null);
       setLoading(false);
@@ -379,7 +419,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/auth/callback`,
     });
     if (error) throw error;

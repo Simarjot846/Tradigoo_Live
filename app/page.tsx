@@ -9,17 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AuroraBackground } from '@/components/landing/aurora-background';
 
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
 // Lazy Load Heavy Sections
 const FeaturesSection = dynamic(() => import('@/components/landing/features-section').then(mod => mod.FeaturesSection));
 const CTASection = dynamic(() => import('@/components/landing/cta-section').then(mod => mod.CTASection));
 const Footer = dynamic(() => import('@/components/landing/footer').then(mod => mod.Footer));
 
 export default function LandingPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // If user is already logged in, seamlessly forward to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, loading, router]);
+
   return (
     <div className="min-h-screen bg-background text-foreground dark:text-white bg-grainy selection:bg-blue-500/30 selection:text-blue-200 overflow-x-hidden font-sans transition-colors duration-300">
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl transition-colors duration-300">
+      <nav className="fixed top-0 left-0 right-0 z-50 pt-safe border-b border-white/10 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl transition-colors duration-300">
         <div className="container mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="h-9 w-9 sm:h-10 sm:w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl shadow-lg shadow-blue-500/20 text-white">T</div>
@@ -50,7 +64,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 sm:pt-32 sm:pb-24 md:pt-48 md:pb-40 px-3 sm:px-6 overflow-hidden">
+      <section className="relative pt-[calc(5rem+env(safe-area-inset-top,0px))] pb-16 sm:pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:pb-24 md:pt-48 md:pb-40 px-3 sm:px-6 overflow-hidden">
         <AuroraBackground />
 
         <div className="container mx-auto max-w-7xl relative z-10 flex flex-col lg:flex-row items-center gap-10 sm:gap-16 lg:gap-24 text-center lg:text-left">

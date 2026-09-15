@@ -101,7 +101,7 @@ export function Chatbot() {
     return (
         <>
             {!isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
+                <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] right-4 sm:right-6 z-50 flex items-center gap-4">
                     {/* Text Bubble */}
                     <div className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white px-4 py-2 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 text-sm font-semibold hidden md:block">
                         Need help? 🤖
@@ -109,18 +109,18 @@ export function Chatbot() {
 
                     <Button
                         onClick={() => setIsOpen(true)}
-                        className="h-16 w-16 rounded-full bg-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all relative overflow-visible group"
+                        className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-blue-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all relative overflow-visible group"
                     >
                         {/* Icon */}
                         <div className="relative flex items-center justify-center">
-                            <Sparkles className="h-8 w-8 text-white" />
+                            <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                         </div>
                     </Button>
                 </div>
             )}
 
             {isOpen && (
-                <div className="fixed inset-x-3 bottom-3 sm:bottom-6 sm:right-6 sm:inset-x-auto sm:w-[380px] z-50 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"
+                <div className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 sm:right-6 sm:inset-x-auto sm:w-[380px] z-50 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"
                     style={{ height: isMinimized ? 'auto' : '500px' }}>
                     {/* Header */}
                     <div className="p-4 bg-zinc-800 flex items-center justify-between border-b border-zinc-700 cursor-pointer" onClick={() => !isMinimized && setIsMinimized(!isMinimized)}>
