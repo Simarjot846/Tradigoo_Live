@@ -11,28 +11,58 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Only trigger redirect when loading has definitively completed and there is no user
-    if (!loading && !user) {
-      const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
-      const graceMs = isNative ? 1000 : 400;
+    let mounted = true;
 
-      const timer = setTimeout(() => {
-        if (!user) {
-          setRedirecting(true);
-          const redirectPath = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
-          router.replace(redirectPath);
-        }
-      }, graceMs);
+    const checkSessionBeforeRedirect = async () => {
+      if (!loading && !user) {
+        const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+        const graceMs = isNative ? 1200 : 500;
 
-      return () => clearTimeout(timer);
-    }
-  }, [user, loading, router, pathname]);
+        try {
+          const { createClient } = await import('@/lib/supabase-client');
+          const supabase = createClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user && mounted) {
+            await refreshUser();
+            return;
+          }
+        } catch {}
+
+        const timer = setTimeout(async () => {
+          if (!mounted) return;
+          try {
+            const { createClient } = await import('@/lib/supabase-client');
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+              await refreshUser();
+              return;
+            }
+          } catch {}
+
+          if (mounted && !user) {
+            setRedirecting(true);
+            const redirectPath = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
+            router.replace(redirectPath);
+          }
+        }, graceMs);
+
+        return () => clearTimeout(timer);
+      }
+    };
+
+    checkSessionBeforeRedirect();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user, loading, router, pathname, refreshUser]);
 
   // Loading state
   if (loading || (!user && !redirecting)) {

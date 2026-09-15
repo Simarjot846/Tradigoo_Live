@@ -86,42 +86,9 @@ export function CapacitorInitializer() {
 
             if (rawUrl.includes('/auth/callback') || rawUrl.includes('code=') || rawUrl.includes('access_token=')) {
               try {
-                const { createClient } = await import('@/lib/supabase-client');
-                const supabase = createClient();
-
-                // 1. Handle hash parameters (#access_token=...&refresh_token=...)
-                if (rawUrl.includes('#')) {
-                  const hashStr = rawUrl.split('#')[1];
-                  const params = new URLSearchParams(hashStr);
-                  const accessToken = params.get('access_token');
-                  const refreshToken = params.get('refresh_token');
-
-                  if (accessToken && refreshToken) {
-                    await supabase.auth.setSession({
-                      access_token: accessToken,
-                      refresh_token: refreshToken,
-                    });
-                    router.push('/dashboard');
-                    return;
-                  }
-                }
-
-                // 2. Handle PKCE authorization code (?code=...)
-                const searchStr = rawUrl.includes('?') ? rawUrl.split('?')[1] : '';
-                const params = new URLSearchParams(searchStr);
-                const code = params.get('code');
-
-                if (code) {
-                  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-                  if (!error && data?.session) {
-                    router.push('/dashboard');
-                    return;
-                  }
-                }
-
-                // 3. Fallback: inspect current session
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
+                const { processOAuthCallback } = await import('@/lib/oauth-handler');
+                const result = await processOAuthCallback(rawUrl);
+                if (result.success) {
                   router.push('/dashboard');
                 }
               } catch (authErr) {
