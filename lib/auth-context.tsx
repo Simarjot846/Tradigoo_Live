@@ -95,12 +95,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     let initialSessionHandled = false;
 
-    // Safety timeout: Ensure loading is never true for more than 2.5 seconds
+    // On native Capacitor, allow more time for storage warm-up before declaring no session
+    const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+    const safetyTimeoutMs = isNative ? 5000 : 2500;
+    const retryDelayMs = isNative ? 800 : 200;
+
+    // Safety timeout: Ensure loading is never stuck
     const safetyTimer = setTimeout(() => {
       if (mounted && loading) {
         setLoading(false);
       }
-    }, 2500);
+    }, safetyTimeoutMs);
 
     const applyUserSession = async (authUser: SupabaseUser | null) => {
       if (!mounted) return;
@@ -111,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Step 1: Set user IMMEDIATELY in 0ms from in-memory session metadata
+      // Step 1: Set user IMMEDIATELY from in-memory session metadata
       const instantProfile = buildFallbackProfile(authUser);
       setUser(instantProfile);
       setLoading(false);
@@ -134,14 +139,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         initialSessionHandled = true;
         applyUserSession(session.user);
       } else if (!error) {
-        // Give a short 200ms grace period for local storage / cookie hydration
+        // Grace period for storage warm-up (longer on native)
         setTimeout(async () => {
           if (!mounted || initialSessionHandled) return;
           const retry = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
           if (mounted && !initialSessionHandled) {
+            initialSessionHandled = true;
             applyUserSession(retry.data?.session?.user || null);
           }
-        }, 200);
+        }, retryDelayMs);
       } else {
         applyUserSession(null);
       }
@@ -149,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (mounted) applyUserSession(null);
     });
 
-    // 2. Subscribe to all Supabase Auth State changes (The Single Authority)
+    // 2. Subscribe to all Supabase Auth State changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -346,10 +352,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
-      // 1. Sign out on client to clear local storage tokens
+      // 1. Sign out on client — this clears Supabase session from our custom storage
       await supabase.auth.signOut().catch(() => {});
       // 2. Sign out on server to clear cookies
       await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => {});
+      // 3. On native, explicitly clear Preferences storage for a clean slate
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (Capacitor.isNativePlatform()) {
+          const { Preferences } = await import('@capacitor/preferences');
+          const { keys } = await Preferences.keys();
+          await Promise.all(
+            keys
+              .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
+              .map(k => Preferences.remove({ key: k }))
+          );
+        }
+      } catch {
+        // Non-critical — Supabase already cleared its own keys
+      }
     } finally {
       setUser(null);
       setLoading(false);

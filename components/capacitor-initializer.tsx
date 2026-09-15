@@ -15,7 +15,18 @@ export function CapacitorInitializer() {
         const { Capacitor } = await import('@capacitor/core');
         if (!Capacitor.isNativePlatform()) return;
 
-        // Status Bar Configuration
+        // ── STEP 1: Warm up session storage FIRST ──────────────────────────
+        // This must run before the Supabase client tries to read the session,
+        // otherwise the client sees an empty storage and treats the user as
+        // logged out. This is the fix for "session lost on app restart".
+        try {
+          const { warmUpCapacitorStorage } = await import('@/lib/supabase-client');
+          await warmUpCapacitorStorage();
+        } catch (storageErr) {
+          console.warn('[Capacitor] Storage warm-up warning:', storageErr);
+        }
+
+        // ── STEP 2: Status Bar ─────────────────────────────────────────────
         try {
           const { StatusBar, Style } = await import('@capacitor/status-bar');
           await StatusBar.setStyle({ style: Style.Dark });
@@ -24,7 +35,7 @@ export function CapacitorInitializer() {
           console.warn('[Capacitor] StatusBar setup warning:', sbErr);
         }
 
-        // Hide Splash Screen
+        // ── STEP 3: Hide Splash Screen ─────────────────────────────────────
         try {
           const { SplashScreen } = await import('@capacitor/splash-screen');
           await SplashScreen.hide();
@@ -32,7 +43,7 @@ export function CapacitorInitializer() {
           console.warn('[Capacitor] SplashScreen hide warning:', ssErr);
         }
 
-        // Android Hardware Back Button Listener
+        // ── STEP 4: Android Hardware Back Button ───────────────────────────
         try {
           const { App } = await import('@capacitor/app');
           App.addListener('backButton', ({ canGoBack }) => {
@@ -47,6 +58,26 @@ export function CapacitorInitializer() {
         } catch (appErr) {
           console.warn('[Capacitor] App listener warning:', appErr);
         }
+
+        // ── STEP 5: App State Change — refresh session when app comes to foreground
+        try {
+          const { App } = await import('@capacitor/app');
+          App.addListener('appStateChange', async ({ isActive }) => {
+            if (isActive) {
+              // Re-hydrate session when app comes back from background
+              try {
+                const { createClient } = await import('@/lib/supabase-client');
+                const supabase = createClient();
+                await supabase.auth.getSession();
+              } catch {
+                // Silent — user will be prompted to log in if session truly expired
+              }
+            }
+          });
+        } catch {
+          // Optional enhancement — ignore if fails
+        }
+
       } catch (err) {
         console.warn('[Capacitor] Native plugin initialization skipped:', err);
       }

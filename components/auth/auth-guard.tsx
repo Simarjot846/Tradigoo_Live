@@ -19,14 +19,17 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   useEffect(() => {
     // If auth state is confirmed resolved (loading=false) and there is definitely no user
     if (!loading && !user) {
-      // 400ms grace window to prevent false redirect on fast page transitions
+      // On native Capacitor, wait longer before redirecting (storage warm-up needs time)
+      const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+      const graceMs = isNative ? 1200 : 400;
+
       const timer = setTimeout(() => {
         if (!user) {
           setRedirecting(true);
           const redirectPath = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
           router.replace(redirectPath);
         }
-      }, 400);
+      }, graceMs);
 
       return () => clearTimeout(timer);
     }
