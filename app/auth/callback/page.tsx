@@ -27,6 +27,14 @@ function AuthCallbackContent() {
           setStatusMsg('Login successful! Redirecting...');
           await refreshUser();
           if (!mounted) return;
+
+          // If opened in in-app browser overlay on Android, hand over to native app
+          if (typeof window !== 'undefined' && /android/i.test(navigator.userAgent)) {
+            try {
+              window.location.href = 'com.tradigoo.app://auth/callback';
+            } catch {}
+          }
+
           const next = searchParams.get('next') || '/dashboard';
           router.replace(next);
         } else {
