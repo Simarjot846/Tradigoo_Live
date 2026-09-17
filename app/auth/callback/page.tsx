@@ -28,10 +28,18 @@ function AuthCallbackContent() {
           await refreshUser();
           if (!mounted) return;
 
-          // If opened in in-app browser overlay on Android, hand over to native app
+          // If opened in in-app browser overlay on Android, hand over to native app with tokens
           if (typeof window !== 'undefined' && /android/i.test(navigator.userAgent)) {
             try {
-              window.location.href = 'com.tradigoo.app://auth/callback';
+              const { createClient } = await import('@/lib/supabase-client');
+              const supabase = createClient();
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session?.access_token && session?.refresh_token) {
+                window.location.href = `com.tradigoo.app://auth/callback#access_token=${encodeURIComponent(session.access_token)}&refresh_token=${encodeURIComponent(session.refresh_token)}`;
+                return;
+              } else {
+                window.location.href = 'com.tradigoo.app://auth/callback';
+              }
             } catch {}
           }
 

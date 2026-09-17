@@ -24,11 +24,20 @@ export function NativeAppHandoff() {
     if (user) {
       setShouldShow(true);
 
-      // Attempt automatic handoff once after login
+      // Attempt automatic handoff with session tokens once after login
       const hasAttempted = sessionStorage.getItem('tradigoo_auto_handoff_tried');
       if (!hasAttempted) {
         sessionStorage.setItem('tradigoo_auto_handoff_tried', 'true');
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
+          try {
+            const { createClient } = await import('@/lib/supabase-client');
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token && session?.refresh_token) {
+              window.location.href = `com.tradigoo.app://auth/callback#access_token=${encodeURIComponent(session.access_token)}&refresh_token=${encodeURIComponent(session.refresh_token)}`;
+              return;
+            }
+          } catch {}
           try {
             window.location.href = 'com.tradigoo.app://dashboard';
           } catch {}
@@ -40,7 +49,17 @@ export function NativeAppHandoff() {
 
   if (!shouldShow || dismissed || !user) return null;
 
-  const handleOpenApp = () => {
+  const handleOpenApp = async () => {
+    try {
+      const { createClient } = await import('@/lib/supabase-client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token && session?.refresh_token) {
+        window.location.href = `com.tradigoo.app://auth/callback#access_token=${encodeURIComponent(session.access_token)}&refresh_token=${encodeURIComponent(session.refresh_token)}`;
+        return;
+      }
+    } catch {}
+
     try {
       window.location.href = 'com.tradigoo.app://dashboard';
     } catch {
