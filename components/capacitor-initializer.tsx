@@ -94,14 +94,14 @@ export function CapacitorInitializer() {
             if (rawUrl.includes('/auth/callback') || rawUrl.includes('code=') || rawUrl.includes('access_token=')) {
               try {
                 const { processOAuthCallback } = await import('@/lib/oauth-handler');
-                const result = await processOAuthCallback(rawUrl);
-                if (result.success) {
-                  router.push('/dashboard');
-                }
+                await processOAuthCallback(rawUrl);
               } catch (authErr) {
                 console.warn('[Capacitor] Deep link auth error:', authErr);
               }
             }
+
+            // Always bring app to dashboard when returning via deep link
+            router.push('/dashboard');
           });
         } catch (dlErr) {
           console.warn('[Capacitor] Deep link listener warning:', dlErr);

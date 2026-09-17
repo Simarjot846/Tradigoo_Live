@@ -27,6 +27,7 @@ const geistMono = Geist_Mono({
 
 
 import { CapacitorInitializer } from "@/components/capacitor-initializer";
+import { NativeAppHandoff } from "@/components/auth/native-app-handoff";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -71,6 +72,7 @@ export default function RootLayout({
               <CapacitorInitializer />
               <CartProvider>
                 <RoleThemeProvider>
+                  <NativeAppHandoff />
                   <Suspense fallback={<div className="h-[72px] w-full bg-white dark:bg-[#0a0a0a]" />}>
                     <Navbar />
                   </Suspense>
