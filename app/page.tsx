@@ -19,8 +19,29 @@ const CTASection = dynamic(() => import('@/components/landing/cta-section').then
 const Footer = dynamic(() => import('@/components/landing/footer').then(mod => mod.Footer));
 
 export default function LandingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const router = useRouter();
+
+  // Handle OAuth code or token if redirected to Site URL /
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasCode = window.location.search.includes('code=');
+    const hasHash = window.location.hash.includes('access_token=') || window.location.hash.includes('code=');
+
+    if (hasCode || hasHash) {
+      import('@/lib/oauth-handler').then(async ({ processOAuthCallback }) => {
+        try {
+          const res = await processOAuthCallback(window.location.href);
+          if (res.success) {
+            await refreshUser();
+            router.replace('/dashboard');
+          }
+        } catch (err) {
+          console.warn('[Landing Page OAuth Error]:', err);
+        }
+      });
+    }
+  }, [router, refreshUser]);
 
   // If user is already logged in, seamlessly forward to dashboard
   useEffect(() => {

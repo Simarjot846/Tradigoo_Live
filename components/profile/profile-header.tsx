@@ -18,8 +18,9 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
-    const { user } = useAuth();
+    const { user, updateRole } = useAuth();
     const [uploading, setUploading] = useState(false);
+    const [switchingRole, setSwitchingRole] = useState(false);
     const [showBucketError, setShowBucketError] = useState(false);
 
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +89,20 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
         }
     };
 
+    const handleSwitchRole = async () => {
+        const targetRole = profile.role === 'wholesaler' ? 'retailer' : 'wholesaler';
+        try {
+            setSwitchingRole(true);
+            await updateRole(targetRole);
+            toast.success(`Account successfully set to ${targetRole === 'wholesaler' ? 'Wholesaler' : 'Retailer'}!`);
+            onUpdate();
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to switch role');
+        } finally {
+            setSwitchingRole(false);
+        }
+    };
+
     return (
         <div className="relative rounded-3xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 p-4 sm:p-8 backdrop-blur-xl overflow-hidden mb-8 shadow-sm dark:shadow-none transition-colors duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 pointer-events-none" />
@@ -118,25 +133,42 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
                 {/* Info Section */}
                 <div className="flex-1 space-y-3 sm:space-y-4 min-w-0 w-full">
                     <div className="min-w-0">
-                        <div className="flex flex-col md:flex-row items-center md:items-start gap-3 sm:gap-4 mb-2">
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-3 sm:gap-4 mb-2 flex-wrap">
                             <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight truncate max-w-full">{profile.business_name}</h1>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Badge variant="outline" className={`
-                                            ${profile.role === 'wholesaler'
-                                                ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 dark:border-purple-500/30'
-                                                : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 dark:border-blue-500/30'}
-                                            capitalize px-3 py-1 text-sm cursor-help`
-                                        }>
-                                            {profile.role}
-                                        </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>This is your registered account type.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex items-center gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Badge variant="outline" className={`
+                                                ${profile.role === 'wholesaler'
+                                                    ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 dark:border-purple-500/30'
+                                                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 dark:border-blue-500/30'}
+                                                capitalize px-3 py-1 text-sm cursor-help font-semibold`
+                                            }>
+                                                {profile.role}
+                                            </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>This is your registered account type.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={switchingRole}
+                                    onClick={handleSwitchRole}
+                                    className="h-7 text-xs px-2.5 rounded-lg border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium"
+                                >
+                                    {switchingRole
+                                        ? 'Switching...'
+                                        : profile.role === 'wholesaler'
+                                        ? 'Switch to Retailer'
+                                        : 'Switch to Wholesaler'}
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex flex-wrap text-zinc-500 dark:text-neutral-400 items-center justify-center md:justify-start gap-x-4 gap-y-2 text-sm">
                             <div className="flex items-center gap-2 min-w-0">

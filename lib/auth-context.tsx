@@ -14,11 +14,34 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData: Partial<User>) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateRole: (newRole: UserRole) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Profile localStorage cache helpers to prevent inadvertent role loss
+function getCachedProfile(userId: string): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(`tradigoo_cached_profile_${userId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.id === userId && parsed.role) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+function setCachedProfile(profile: User): void {
+  if (typeof window === 'undefined' || !profile?.id) return;
+  try {
+    localStorage.setItem(`tradigoo_cached_profile_${profile.id}`, JSON.stringify(profile));
+  } catch {}
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -27,12 +50,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
 
   const buildFallbackProfile = useCallback((authUser: SupabaseUser): User => {
+    // 1. Check cached profile first — preserves wholesaler role across page loads and token refreshes
+    const cached = getCachedProfile(authUser.id);
+    if (cached) {
+      return {
+        ...cached,
+        id: authUser.id,
+        email: (authUser.email || cached.email || 'user@example.com').toLowerCase(),
+      };
+    }
+
+    // 2. Check metadata
+    const metaRole = (authUser.user_metadata?.role || authUser.app_metadata?.role) as UserRole | undefined;
+
     return {
       id: authUser.id,
       email: (authUser.email || 'user@example.com').toLowerCase(),
       name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Trader',
       phone: authUser.phone || authUser.user_metadata?.phone || null,
-      role: (authUser.user_metadata?.role as UserRole) || 'retailer',
+      role: metaRole || 'wholesaler', // Prefer wholesaler if ambiguous to avoid accidental downgrade
       business_name: authUser.user_metadata?.business_name || '',
       location: authUser.user_metadata?.location || 'India',
       trust_score: 500,
@@ -48,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fallback = buildFallbackProfile(authUser);
     try {
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Profile query timeout')), 3000)
+        setTimeout(() => reject(new Error('Profile query timeout')), 10000)
       );
       const queryPromise = supabase
         .from('profiles')
@@ -71,20 +107,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch {}
 
-        const newProfile = { ...fallback, role: assignedRole };
+        const newProfile: User = { ...fallback, role: assignedRole };
         // Insert only if not existing — never overwrite an existing profile
         supabase.from('profiles').insert(newProfile as any).then(() => {}, () => {});
+        setCachedProfile(newProfile);
         return newProfile;
       }
 
       // Existing profile found — preserve its role and data strictly
-      return {
+      const fullProfile: User = {
         ...fallback,
         ...profile,
         id: authUser.id,
         email: (authUser.email || profile.email || fallback.email).toLowerCase(),
       };
-    } catch {
+
+      setCachedProfile(fullProfile);
+
+      // Sync role into auth user metadata so JWT session always preserves correct role
+      if (authUser.user_metadata?.role !== fullProfile.role) {
+        supabase.auth.updateUser({ data: { role: fullProfile.role } }).catch(() => {});
+      }
+
+      return fullProfile;
+    } catch (err) {
+      console.warn('[AuthContext] Profile fetch notice, preserving existing profile:', err);
       return fallback;
     }
   }, [supabase, buildFallbackProfile]);
@@ -93,16 +140,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
-        const fallback = buildFallbackProfile(authUser);
-        setUser(fallback);
-        fetchUserProfile(authUser).then(p => setUser(p)).catch(() => {});
+        // Fetch and update profile without blindly setting an unverified retailer fallback
+        const p = await fetchUserProfile(authUser);
+        setUser(p);
       } else {
         setUser(null);
       }
     } catch {
-      setUser(null);
+      // Retain existing user on transient network error
     }
-  }, [supabase, buildFallbackProfile, fetchUserProfile]);
+  }, [supabase, fetchUserProfile]);
 
   useEffect(() => {
     let mounted = true;
@@ -116,9 +163,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // 1. Immediately provide authenticated state from session
-      const instantProfile = buildFallbackProfile(authUser);
-      setUser(instantProfile);
+      // 1. Immediately provide authenticated state without clobbering an existing verified role
+      setUser(prev => {
+        if (prev && prev.id === authUser.id && prev.role) {
+          return prev; // Preserve current role in state!
+        }
+        return buildFallbackProfile(authUser);
+      });
       setLoading(false);
 
       // 2. Enrich profile from DB in background
@@ -133,16 +184,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const initAuth = async () => {
-      // Step A: Warm up storage cache (Preferences + localStorage)
-      try {
-        const { warmUpCapacitorStorage } = await import('@/lib/supabase-client');
-        await warmUpCapacitorStorage();
-      } catch {}
+      // Safety timer: ensure loading is never stuck true beyond 3.5 seconds
+      const safetyTimer = setTimeout(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      }, 3500);
 
-      if (!mounted) return;
-
-      // Step B: Inspect existing session
       try {
+        // Step A: Warm up storage cache (Preferences + localStorage)
+        try {
+          const { warmUpCapacitorStorage } = await import('@/lib/supabase-client');
+          await warmUpCapacitorStorage();
+        } catch {}
+
+        if (!mounted) return;
+
+        // Step B: Inspect existing session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
 
@@ -166,12 +224,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {
         if (mounted) applyUserSession(null);
+      } finally {
+        clearTimeout(safetyTimer);
+        if (mounted) setLoading(false);
       }
     };
 
     initAuth();
 
-    // Step C: Subscribe to all Supabase Auth State changes
+    // Step C: Subscribe to Supabase Auth State changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -460,6 +521,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  const updateRole = async (newRole: UserRole) => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // 1. Update in profiles table
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', user.id);
+
+      if (dbError) throw dbError;
+
+      // 2. Sync to Supabase Auth metadata
+      await supabase.auth.updateUser({ data: { role: newRole } }).catch(() => {});
+
+      // 3. Update localStorage and React state
+      const updatedUser: User = { ...user, role: newRole };
+      setCachedProfile(updatedUser);
+      setUser(updatedUser);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -468,6 +553,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signOut,
     refreshUser,
+    updateRole,
     resetPassword,
     updatePassword
   }), [user, loading, buildFallbackProfile, fetchUserProfile, refreshUser]);

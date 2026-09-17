@@ -59,12 +59,19 @@ export function CapacitorInitializer() {
         // ── STEP 5: App State Change — refresh session on foreground ────────
         try {
           const { App } = await import('@capacitor/app');
+          const { Browser } = await import('@capacitor/browser');
           App.addListener('appStateChange', async ({ isActive }) => {
             if (isActive) {
               try {
                 const { createClient } = await import('@/lib/supabase-client');
                 const supabase = createClient();
-                await supabase.auth.getSession();
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                  await Browser.close().catch(() => {});
+                  if (pathname === '/auth/login' || pathname === '/') {
+                    router.push('/dashboard');
+                  }
+                }
               } catch {}
             }
           });

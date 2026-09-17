@@ -102,12 +102,12 @@ async function autoCreateProfile(supabase: any, user: any) {
 
     const { data: existing } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, role, name, email, business_name, location, trust_score')
       .eq('id', user.id)
       .maybeSingle();
 
     if (!existing) {
-      await supabase.from('profiles').insert({
+      const newProfile = {
         id: user.id,
         email: (user.email || '').toLowerCase(),
         name: user.user_metadata?.name || user.email?.split('@')[0] || 'Trader',
@@ -118,7 +118,28 @@ async function autoCreateProfile(supabase: any, user: any) {
         total_orders: 0,
         successful_orders: 0,
         disputed_orders: 0,
-      });
+      };
+
+      await supabase.from('profiles').insert(newProfile);
+
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`tradigoo_cached_profile_${user.id}`, JSON.stringify(newProfile));
+        } catch {}
+      }
+
+      await supabase.auth.updateUser({ data: { role: pendingRole } }).catch(() => {});
+    } else {
+      // Profile exists! Cache it to prevent role flickering
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`tradigoo_cached_profile_${user.id}`, JSON.stringify(existing));
+        } catch {}
+      }
+
+      if (existing.role && user.user_metadata?.role !== existing.role) {
+        await supabase.auth.updateUser({ data: { role: existing.role } }).catch(() => {});
+      }
     }
   } catch (err) {
     console.warn('[OAuth] Profile check notice:', err);

@@ -18,14 +18,44 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, loading: authLoading, signIn, signInWithGoogle } = useAuth();
+  const [timeoutReached, setTimeoutReached] = useState(false);
+  const [oauthProcessing, setOauthProcessing] = useState(false);
+  const { user, loading: authLoading, signIn, signInWithGoogle, refreshUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get('redirect') || '/dashboard';
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Safety timer: never block user with spinner for more than 2.5 seconds
+    const timer = setTimeout(() => {
+      setTimeoutReached(true);
+    }, 2500);
+
+    // If OAuth code or access token is returned to login page, auto-process it
+    const code = searchParams.get('code');
+    const hasHash = typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.hash.includes('code='));
+    
+    if (code || hasHash) {
+      setOauthProcessing(true);
+      import('@/lib/oauth-handler').then(async ({ processOAuthCallback }) => {
+        try {
+          const res = await processOAuthCallback(searchParams);
+          if (res.success) {
+            await refreshUser();
+            router.replace(redirectTarget);
+            return;
+          }
+        } catch (err) {
+          console.warn('[Login OAuth Error]:', err);
+        } finally {
+          setOauthProcessing(false);
+        }
+      });
+    }
+
+    return () => clearTimeout(timer);
+  }, [searchParams, router, refreshUser, redirectTarget]);
 
   // If user is already authenticated, forward immediately
   useEffect(() => {
@@ -34,14 +64,18 @@ export default function LoginPage() {
     }
   }, [user, authLoading, router, redirectTarget]);
 
-  // If still checking auth or already logged in, show clean loader — NEVER show login form to an authenticated user
-  if (!mounted || authLoading || user) {
+  // Show loader only if mounting, actively processing OAuth, or still checking auth within safety window
+  if (!mounted || oauthProcessing || user || (authLoading && !timeoutReached)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-zinc-500 font-medium">
-            {user ? 'Redirecting to dashboard...' : 'Loading Tradigoo...'}
+            {user
+              ? 'Redirecting to dashboard...'
+              : oauthProcessing
+              ? 'Completing authentication...'
+              : 'Loading Tradigoo...'}
           </p>
         </div>
       </div>
